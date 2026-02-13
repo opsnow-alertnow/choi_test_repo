@@ -267,6 +267,184 @@ body {
   font-size: 1.3rem; cursor: pointer; z-index: 90;
   display: flex; align-items: center; justify-content: center;
 }
+
+
+
+/* 아기 캐릭터 v3 - 자연스러운 동작 */
+.baby-char {
+  position: fixed;
+  z-index: 80;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+  will-change: left, top, transform;
+}
+.baby-char .bubble {
+  position: absolute;
+  top: -34px; left: 50%; transform: translateX(-50%);
+  background: white;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 0.65rem;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  opacity: 0;
+  transition: opacity 0.5s;
+  z-index: 2;
+}
+.baby-char .bubble.show { opacity: 1; }
+.baby-char .bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -6px; left: 50%; transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid white;
+}
+.baby-char .zzz {
+  position: absolute;
+  top: -18px; right: -8px;
+  font-size: 0.8rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.baby-char.state-sleep .zzz {
+  animation: zzz 2s ease-in-out infinite;
+}
+@keyframes zzz {
+  0% { opacity: 0; transform: translateY(0) scale(0.8); }
+  50% { opacity: 1; transform: translateY(-15px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-30px) scale(0.8); }
+}
+/* 기어다니기: 몸이 좌우로 흔들림 */
+.baby-char.state-crawl .baby-body {
+  animation: crawlWobble 0.5s ease-in-out infinite alternate;
+}
+@keyframes crawlWobble {
+  0% { transform: rotate(-4deg) translateY(1px); }
+  100% { transform: rotate(4deg) translateY(-1px); }
+}
+/* 기어다니기: 팔다리 교차 */
+.baby-char.state-crawl .arm-left {
+  animation: armCrawlL 0.5s ease-in-out infinite alternate;
+}
+.baby-char.state-crawl .arm-right {
+  animation: armCrawlR 0.5s ease-in-out infinite alternate;
+}
+@keyframes armCrawlL {
+  0% { transform: translateX(-3px) translateY(-2px); }
+  100% { transform: translateX(3px) translateY(2px); }
+}
+@keyframes armCrawlR {
+  0% { transform: translateX(3px) translateY(2px); }
+  100% { transform: translateX(-3px) translateY(-2px); }
+}
+/* 서기: 몸이 세워짐 + 흔들림 */
+.baby-char.state-stand .baby-body {
+  animation: standWobble 0.8s ease-in-out infinite alternate;
+}
+@keyframes standWobble {
+  0% { transform: rotate(-2deg); }
+  100% { transform: rotate(2deg); }
+}
+/* 걸음마: 좌우 기울기 */
+.baby-char.state-walk .baby-body {
+  animation: walkSway 0.35s ease-in-out infinite alternate;
+}
+@keyframes walkSway {
+  0% { transform: rotate(-6deg) translateY(0); }
+  100% { transform: rotate(6deg) translateY(-2px); }
+}
+/* 넘어지기: 앞으로 쓰러짐 */
+.baby-char.state-fall .baby-body {
+  animation: fallOver 0.4s ease-in forwards;
+}
+@keyframes fallOver {
+  0% { transform: rotate(0deg); }
+  40% { transform: rotate(30deg); }
+  100% { transform: rotate(90deg) translateY(8px); }
+}
+/* 떨어지기 */
+.baby-char.state-drop .baby-body {
+  animation: dropTumble 0.5s ease-in forwards;
+}
+@keyframes dropTumble {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* 착지 탄성 */
+.baby-char.state-land .baby-body {
+  animation: landSquish 0.5s ease-out;
+}
+@keyframes landSquish {
+  0% { transform: scaleY(0.6) scaleX(1.3); }
+  40% { transform: scaleY(1.2) scaleX(0.85); }
+  70% { transform: scaleY(0.95) scaleX(1.05); }
+  100% { transform: scaleY(1) scaleX(1); }
+}
+/* 행복: 통통 */
+.baby-char.state-happy .baby-body {
+  animation: happyBounce 0.5s ease-in-out infinite;
+}
+@keyframes happyBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.03); }
+}
+/* 울기: 떨림 */
+.baby-char.state-cry .baby-body {
+  animation: cryShake 0.15s ease-in-out infinite alternate;
+}
+@keyframes cryShake {
+  0% { transform: translateX(-1px) rotate(-1deg); }
+  100% { transform: translateX(1px) rotate(1deg); }
+}
+/* 눈물 */
+.baby-char .tears {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.baby-char.state-cry .tears {
+  animation: tearDrop 1s ease-in infinite;
+}
+@keyframes tearDrop {
+  0% { opacity: 0; transform: translateY(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(12px); }
+}
+/* 별 이펙트 */
+.baby-char .stars {
+  position: absolute;
+  top: -8px; left: 50%; transform: translateX(-50%);
+  font-size: 0.7rem;
+  opacity: 0;
+  pointer-events: none;
+}
+.baby-char.state-land .stars,
+.baby-char.state-fall .stars {
+  animation: starPop 0.8s ease-out;
+}
+@keyframes starPop {
+  0% { opacity: 1; transform: translateX(-50%) scale(0.5); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.4); }
+  100% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+}
+/* 하트 이펙트 */
+.baby-char .hearts {
+  position: absolute;
+  top: -15px; left: 50%; transform: translateX(-50%);
+  font-size: 0.6rem;
+  opacity: 0;
+  pointer-events: none;
+}
+.baby-char.state-happy .hearts {
+  animation: heartFloat 1.5s ease-out infinite;
+}
+@keyframes heartFloat {
+  0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0.8); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(1.2); }
+}
+
 </style>
 </head>
 <body>
@@ -1699,6 +1877,347 @@ body {
 </div>
 
 <!-- 공유 버튼 -->
+
+
+
+<!-- 귀여운 아기 캐릭터 v3 -->
+<div class="baby-char" id="babyChar">
+  <div class="bubble" id="babyBubble"></div>
+  <div class="zzz">z</div>
+  <div class="stars" id="babyStars">*</div>
+  <div class="hearts" id="babyHearts">&hearts;</div>
+  <div class="baby-body" id="babyBody">
+    <svg viewBox="0 0 60 60" width="52" height="52" style="display:block;overflow:visible;">
+      <!-- 몸통 (기저귀) -->
+      <ellipse cx="30" cy="48" rx="14" ry="10" fill="#ffe0b2"/>
+      <ellipse cx="30" cy="50" rx="12" ry="7" fill="#bbdefb"/>
+      <!-- 다리 -->
+      <ellipse cx="22" cy="55" rx="5" ry="3.5" fill="#ffe0b2"/>
+      <ellipse cx="38" cy="55" rx="5" ry="3.5" fill="#ffe0b2"/>
+      <!-- 머리 -->
+      <circle cx="30" cy="26" r="18" fill="#ffe0b2"/>
+      <!-- 볼 터치 -->
+      <circle cx="18" cy="30" r="4" fill="#ffcdd2" opacity="0.6"/>
+      <circle cx="42" cy="30" r="4" fill="#ffcdd2" opacity="0.6"/>
+      <!-- 머리카락 -->
+      <path d="M14 20 Q18 8 30 10 Q42 8 46 20" fill="#795548" stroke="none"/>
+      <circle cx="22" cy="12" r="3" fill="#795548"/>
+      <circle cx="30" cy="10" r="3.5" fill="#795548"/>
+      <circle cx="38" cy="12" r="3" fill="#795548"/>
+      <!-- 꼬리 머리카락 (삐침) -->
+      <path d="M30 8 Q32 2 28 4" stroke="#795548" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- 눈 -->
+      <g id="babyEyes">
+        <path d="M22 26 Q24 23 26 26" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M34 26 Q36 23 38 26" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+      <!-- 입 -->
+      <path id="babyMouth" d="M25 33 Q30 38 35 33" stroke="#e91e63" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- 왼쪽 손 -->
+      <g class="arm-left">
+        <circle cx="12" cy="42" r="4.5" fill="#ffe0b2"/>
+        <circle cx="10" cy="40" r="1.2" fill="#ffccbc"/>
+      </g>
+      <!-- 오른쪽 손 -->
+      <g class="arm-right">
+        <circle cx="48" cy="42" r="4.5" fill="#ffe0b2"/>
+        <circle cx="50" cy="40" r="1.2" fill="#ffccbc"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<script>
+// 아기 v3 - 자연스러운 아기 행동 시뮬레이션
+(function() {
+  const baby = document.getElementById('babyChar');
+  const body = document.getElementById('babyBody');
+  const bubble = document.getElementById('babyBubble');
+  const eyes = document.getElementById('babyEyes');
+  const mouth = document.getElementById('babyMouth');
+
+  const HEADER = 60, TABBAR = 65, SIZE = 52;
+  const safeT = () => HEADER + 10;
+  const safeB = () => window.innerHeight - TABBAR - SIZE;
+  const safeR = () => window.innerWidth - SIZE - 5;
+  const rand = (a, b) => Math.floor(Math.random() * (b - a)) + a;
+
+  // 표정
+  const FACE = {
+    happy: {
+      e: '<path d="M22 26 Q24 23 26 26" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M34 26 Q36 23 38 26" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>',
+      m: 'M24 32 Q30 40 36 32'
+    },
+    smile: {
+      e: '<path d="M22 26 Q24 23 26 26" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M34 26 Q36 23 38 26" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>',
+      m: 'M25 33 Q30 37 35 33'
+    },
+    curious: {
+      e: '<ellipse cx="24" cy="25" rx="2.5" ry="3" fill="#333"/><circle cx="25" cy="24.5" r="1" fill="white"/><ellipse cx="36" cy="25" rx="2.5" ry="3" fill="#333"/><circle cx="37" cy="24.5" r="1" fill="white"/>',
+      m: 'M27 33 Q30 36 33 33'
+    },
+    surprise: {
+      e: '<circle cx="24" cy="25" r="3.5" fill="white" stroke="#333" stroke-width="1.5"/><circle cx="24" cy="25" r="2" fill="#333"/><circle cx="36" cy="25" r="3.5" fill="white" stroke="#333" stroke-width="1.5"/><circle cx="36" cy="25" r="2" fill="#333"/>',
+      m: 'M27 34 Q30 38 33 34'
+    },
+    cry: {
+      e: '<path d="M21 24 Q24 27 27 24" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M33 24 Q36 27 39 24" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="22" y1="28" x2="19" y2="34" stroke="#64b5f6" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/><line x1="38" y1="28" x2="41" y2="34" stroke="#64b5f6" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>',
+      m: 'M25 35 Q30 31 35 35'
+    },
+    sleep: {
+      e: '<path d="M21 27 L27 27" stroke="#333" stroke-width="2" stroke-linecap="round"/><path d="M33 27 L39 27" stroke="#333" stroke-width="2" stroke-linecap="round"/>',
+      m: 'M27 34 Q30 35 33 34'
+    },
+    dizzy: {
+      e: '<path d="M21 24 L27 28 M21 28 L27 24" stroke="#333" stroke-width="1.5" stroke-linecap="round"/><path d="M33 24 L39 28 M33 28 L39 24" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>',
+      m: 'M26 35 Q30 33 34 35'
+    },
+    effort: {
+      e: '<path d="M22 24 L26 24" stroke="#333" stroke-width="2" stroke-linecap="round"/><path d="M34 24 L38 24" stroke="#333" stroke-width="2" stroke-linecap="round"/><ellipse cx="24" cy="26" rx="2" ry="2.5" fill="#333"/><ellipse cx="36" cy="26" rx="2" ry="2.5" fill="#333"/>',
+      m: 'M26 34 Q30 32 34 34'
+    }
+  };
+
+  function setFace(n) { eyes.innerHTML = FACE[n].e; mouth.setAttribute('d', FACE[n].m); }
+  function setState(s) { baby.className = 'baby-char state-' + s; }
+  function showMsg(msg, dur) {
+    if (!msg) { bubble.classList.remove('show'); return; }
+    bubble.textContent = msg;
+    bubble.classList.add('show');
+    setTimeout(() => bubble.classList.remove('show'), dur || 2500);
+  }
+
+  // 부드러운 이동
+  let curX = 20, curY = 0, facingRight = true;
+  function glide(x, y, dur, ease) {
+    return new Promise(resolve => {
+      // 방향 설정
+      if (x !== curX) {
+        facingRight = x > curX;
+        baby.style.transform = facingRight ? 'scaleX(1)' : 'scaleX(-1)';
+      }
+      baby.style.transition = 'left ' + dur + 'ms ' + (ease || 'ease-in-out') + ', top ' + dur + 'ms ' + (ease || 'ease-in-out');
+      baby.style.left = x + 'px';
+      baby.style.top = y + 'px';
+      curX = x; curY = y;
+      setTimeout(resolve, dur);
+    });
+  }
+
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // 행동 패턴들
+  async function crawlAround() {
+    setState('crawl');
+    setFace('smile');
+    showMsg('기어가는 중~', 3000);
+    const targetX = rand(10, safeR());
+    await glide(targetX, safeB(), rand(3000, 5000));
+  }
+
+  async function lookAround() {
+    setState('crawl');
+    setFace('curious');
+    showMsg('뭐가 있지?', 2000);
+    // 잠깐 멈추고 두리번
+    await wait(1500);
+    baby.style.transform = 'scaleX(-1)';
+    await wait(800);
+    baby.style.transform = 'scaleX(1)';
+    await wait(800);
+  }
+
+  async function tryStandUp() {
+    // 일어서려고 시도
+    setState('stand');
+    setFace('effort');
+    showMsg('으쌰!', 1500);
+    await wait(1500);
+
+    // 50% 확률로 성공/실패
+    if (Math.random() > 0.4) {
+      // 성공 -> 걸음마
+      setState('walk');
+      setFace('happy');
+      showMsg('일어났다!', 2000);
+      const dist = rand(30, 80) * (facingRight ? 1 : -1);
+      const nx = Math.max(5, Math.min(safeR(), curX + dist));
+      await glide(nx, safeB(), rand(2000, 3500));
+      
+      // 걸음마 후 넘어지기
+      await fallDown();
+    } else {
+      // 실패 -> 엉덩방아
+      setState('land');
+      setFace('surprise');
+      showMsg('엉!', 1500);
+      await wait(1500);
+      setFace('smile');
+      showMsg('', 0);
+    }
+  }
+
+  async function fallDown() {
+    setState('fall');
+    setFace('surprise');
+    showMsg('앗!', 1200);
+    await wait(600);
+    setState('land');
+    setFace('dizzy');
+    showMsg('', 0);
+    await wait(500);
+
+    // 울거나 괜찮거나
+    if (Math.random() > 0.5) {
+      setState('cry');
+      setFace('cry');
+      showMsg('으에엥~', 3000);
+      await wait(3000);
+      // 달래지고 회복
+      setState('happy');
+      setFace('smile');
+      showMsg('괜찮아!', 2000);
+      await wait(2000);
+    } else {
+      setState('happy');
+      setFace('happy');
+      showMsg('헤헤!', 2000);
+      await wait(2000);
+    }
+  }
+
+  async function climbUp() {
+    // 벽 타고 올라가기
+    setState('crawl');
+    setFace('effort');
+    showMsg('올라간다!', 2000);
+    
+    // 벽으로 이동
+    const wallX = curX < window.innerWidth / 2 ? 5 : safeR();
+    await glide(wallX, safeB(), 1500);
+    
+    // 위로 올라가기
+    const targetY = rand(safeT(), safeT() + 120);
+    setFace('effort');
+    showMsg('끄응...', 2500);
+    await glide(wallX, targetY, rand(2500, 4000), 'ease-out');
+    
+    // 위에서 기어다니기
+    setState('crawl');
+    setFace('curious');
+    showMsg('높다!', 2000);
+    const acrossX = rand(30, safeR() - 30);
+    await glide(acrossX, targetY, rand(2000, 3500));
+  }
+
+  async function dropFromTop() {
+    // 위에서 떨어지기
+    setState('drop');
+    setFace('surprise');
+    showMsg('으아앗!', 1000);
+    
+    // 빠르게 떨어지기
+    baby.style.transition = 'top 0.45s cubic-bezier(0.55, 0, 1, 0.45)';
+    baby.style.top = safeB() + 'px';
+    curY = safeB();
+    await wait(500);
+    
+    // 착지
+    setState('land');
+    setFace('dizzy');
+    showMsg('쿵!', 1500);
+    await wait(800);
+    
+    // 울기
+    setState('cry');
+    setFace('cry');
+    showMsg('아야...', 3000);
+    await wait(3000);
+    
+    // 회복
+    setState('happy');
+    setFace('happy');
+    showMsg('또 할래!', 2000);
+    await wait(2000);
+  }
+
+  async function napTime() {
+    setState('sleep');
+    setFace('sleep');
+    showMsg('', 0);
+    await wait(rand(5000, 7000));
+    // 기지개
+    setState('happy');
+    setFace('happy');
+    showMsg('잘 잤다!', 2000);
+    await wait(2000);
+  }
+
+  async function playHappy() {
+    setState('happy');
+    setFace('happy');
+    const msgs = ['아빠 좋아!', '기분 좋아!', '까꿍!', '놀자!'];
+    showMsg(msgs[rand(0, msgs.length)], 2500);
+    // 제자리 통통 뛰기
+    await wait(2500);
+  }
+
+  async function exploreMiddle() {
+    setState('crawl');
+    setFace('curious');
+    showMsg('탐험!', 2000);
+    const mx = rand(safeR() * 0.2, safeR() * 0.8);
+    const my = rand(safeB() * 0.5, safeB());
+    await glide(mx, my, rand(3000, 5000));
+  }
+
+  // 행동 시퀀스 (자연스러운 흐름)
+  const sequence = [
+    crawlAround,      // 기어다니기
+    lookAround,        // 두리번
+    crawlAround,       // 또 기어다니기
+    tryStandUp,        // 일어서기 시도 (넘어질 수도)
+    crawlAround,       // 기어다니기
+    playHappy,         // 신나게 놀기
+    climbUp,           // 위로 올라가기
+    dropFromTop,       // 떨어지기!
+    crawlAround,       // 회복 후 기어다니기
+    napTime,           // 낮잠
+    crawlAround,       // 일어나서 기어다니기
+    exploreMiddle,     // 중간쯤 탐험
+    tryStandUp,        // 또 일어서기 시도
+    lookAround,        // 두리번
+    playHappy,         // 즐거워하기
+    climbUp,           // 다시 올라가기
+    dropFromTop,       // 또 떨어지기!
+    crawlAround,       // 기어다니기
+  ];
+
+  let seqIdx = 0;
+  async function runSequence() {
+    try {
+      await sequence[seqIdx % sequence.length]();
+    } catch(e) {}
+    seqIdx++;
+    setTimeout(runSequence, rand(800, 1800));
+  }
+
+  // 초기화
+  curY = safeB();
+  baby.style.left = '20px';
+  baby.style.top = curY + 'px';
+  baby.style.transform = 'scaleX(1)';
+  setState('crawl');
+  setFace('smile');
+
+  setTimeout(runSequence, 2000);
+})();
+</script>
+
+
+
+
+
 <button class="share-fab" onclick="shareApp()" title="공유">&#128279;</button>
 
 <!-- 하단 탭바 -->
