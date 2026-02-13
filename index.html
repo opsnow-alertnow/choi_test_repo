@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="출산체크">
+<meta name="theme-color" content="#2563eb">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%232563eb'/><text x='90' y='125' font-size='110' text-anchor='middle' fill='white'>&#128118;</text></svg>">
+<title>출산 체크리스트</title>
+<style>
+:root {
+  --primary: #2563eb; --primary-light: #dbeafe;
+  --success: #10b981; --success-light: #d1fae5;
+  --warning: #f59e0b; --warning-light: #fef3c7;
+  --danger: #ef4444; --danger-light: #fee2e2;
+  --purple: #8b5cf6; --purple-light: #ede9fe;
+  --pink: #ec4899; --pink-light: #fce7f3;
+  --teal: #14b8a6; --teal-light: #ccfbf1;
+  --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+  --gray-300: #d1d5db; --gray-500: #6b7280; --gray-700: #374151; --gray-900: #111827;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+  background: var(--gray-50); color: var(--gray-900); line-height: 1.6;
+  padding-bottom: calc(70px + var(--safe-bottom));
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 상단 헤더 */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: white; padding: 16px 20px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.app-header h1 { font-size: 1.2rem; font-weight: 800; }
+.app-header .sub { font-size: 0.75rem; opacity: 0.8; margin-top: 2px; }
+.progress-mini {
+  margin-top: 10px; display: flex; align-items: center; gap: 10px;
+}
+.progress-mini .bar {
+  flex: 1; height: 6px; background: rgba(255,255,255,0.3);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-mini .fill {
+  height: 100%; background: white; border-radius: 3px;
+  transition: width 0.4s;
+}
+.progress-mini .text { font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+
+/* 하단 탭바 */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: white;
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; padding: 8px 0 6px;
+  font-size: 0.62rem; color: var(--gray-500);
+  cursor: pointer; transition: color 0.2s;
+  border: none; background: none;
+  -webkit-appearance: none;
+}
+.tab-item.active { color: var(--primary); font-weight: 700; }
+.tab-item .icon { font-size: 1.3rem; margin-bottom: 2px; }
+
+/* 탭 콘텐츠 */
+.tab-content { display: none; padding: 16px; }
+.tab-content.active { display: block; }
+
+/* 카드 */
+.m-card {
+  background: white; border-radius: 14px; margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+.m-card-header {
+  display: flex; gap: 12px; padding: 14px 16px;
+  align-items: flex-start; cursor: pointer;
+}
+.m-check {
+  width: 28px; height: 28px; border: 2.5px solid var(--gray-300);
+  border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; font-size: 0;
+}
+.m-check.done {
+  background: var(--success); border-color: var(--success);
+  font-size: 16px; color: white;
+}
+.m-check.done::after { content: '\2713'; font-weight: 700; }
+.m-card-body { flex: 1; }
+.m-card-title { font-weight: 700; font-size: 0.95rem; line-height: 1.4; }
+.m-card-desc { font-size: 0.8rem; color: var(--gray-500); margin-top: 3px; line-height: 1.5; }
+.m-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.m-tag {
+  font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; font-weight: 600;
+}
+.m-detail {
+  display: none; padding: 0 16px 16px;
+  font-size: 0.85rem; line-height: 1.7;
+}
+.m-detail.open { display: block; }
+.m-detail-section { margin-bottom: 14px; }
+.m-detail-label {
+  font-weight: 700; font-size: 0.85rem; margin-bottom: 6px;
+  padding-bottom: 4px; border-bottom: 1px solid var(--gray-100);
+}
+.m-steps { list-style: none; padding: 0; counter-reset: step; }
+.m-steps li {
+  counter-increment: step; padding: 10px 12px 10px 42px;
+  margin-bottom: 6px; background: var(--gray-50); border-radius: 8px;
+  border-left: 3px solid var(--primary); font-size: 0.82rem;
+  position: relative;
+}
+.m-steps li::before {
+  content: counter(step); position: absolute; left: 10px; top: 10px;
+  width: 22px; height: 22px; background: var(--primary); color: white;
+  border-radius: 50%; font-size: 0.7rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.m-info-grid {
+  display: grid; grid-template-columns: 90px 1fr;
+  gap: 3px 12px; font-size: 0.82rem;
+  background: var(--gray-50); padding: 12px; border-radius: 8px;
+}
+.m-info-grid dt { font-weight: 600; }
+.m-info-grid dd a { color: var(--primary); text-decoration: none; }
+.m-warn {
+  padding: 10px 14px; border-radius: 8px; font-size: 0.8rem;
+  margin: 8px 0; line-height: 1.6;
+}
+.m-warn.red { background: var(--danger-light); border-left: 3px solid var(--danger); }
+.m-warn.blue { background: var(--primary-light); border-left: 3px solid var(--primary); }
+.m-warn.green { background: var(--success-light); border-left: 3px solid var(--success); }
+.m-warn.yellow { background: var(--warning-light); border-left: 3px solid var(--warning); }
+
+/* 서브탭 (Phase 내) */
+.sub-tabs {
+  display: flex; gap: 6px; overflow-x: auto; padding: 0 0 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.sub-tabs::-webkit-scrollbar { display: none; }
+.sub-tab {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 600;
+  background: var(--gray-100); color: var(--gray-700);
+  border: none; cursor: pointer; white-space: nowrap;
+}
+.sub-tab.active { background: var(--primary); color: white; }
+
+/* 가이드 섹션 */
+.guide-section {
+  background: white; border-radius: 14px; margin-bottom: 12px;
+  padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid var(--gray-200);
+}
+.guide-title {
+  font-size: 1rem; font-weight: 700; margin-bottom: 10px;
+  padding-bottom: 8px; border-bottom: 2px solid var(--gray-100);
+}
+.guide-sub { font-size: 0.9rem; font-weight: 700; margin: 14px 0 8px; }
+
+/* 테이블 */
+.m-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.m-table th { background: var(--gray-50); padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--gray-200); font-weight: 600; }
+.m-table td { padding: 8px 10px; border-bottom: 1px solid var(--gray-100); }
+.m-table tr:last-child td { border-bottom: none; }
+
+/* 체크리스트 (인쇄용) */
+.print-check { list-style: none; padding: 0; }
+.print-check li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; margin-bottom: 4px;
+  background: var(--gray-50); border-radius: 8px;
+  font-size: 0.82rem; cursor: pointer;
+}
+.print-check li .pc-box {
+  width: 22px; height: 22px; border: 2px solid var(--gray-300);
+  border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.print-check li.pc-done .pc-box {
+  background: var(--success); border-color: var(--success);
+}
+.print-check li.pc-done .pc-box::after { content: '\2713'; color: white; font-weight: 700; font-size: 13px; }
+.print-check li.pc-done { color: var(--gray-500); text-decoration: line-through; }
+
+/* 금액 카드 */
+.money-mini {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+}
+.money-item {
+  background: white; border-radius: 12px; padding: 12px;
+  text-align: center; border: 1px solid var(--gray-200);
+}
+.money-item .amt { font-size: 1.2rem; font-weight: 800; margin: 4px 0 2px; }
+.money-item .lbl { font-size: 0.7rem; color: var(--gray-500); }
+.money-item .cat { font-size: 0.62rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+
+/* 연락처 */
+.contact-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px; margin-bottom: 6px;
+  background: white; border-radius: 10px;
+  border: 1px solid var(--gray-200);
+}
+.contact-item .name { font-weight: 600; font-size: 0.85rem; }
+.contact-item .use { font-size: 0.72rem; color: var(--gray-500); }
+.contact-item .call-btn {
+  padding: 6px 12px; background: var(--primary); color: white;
+  border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+  text-decoration: none; white-space: nowrap;
+}
+
+/* 검색 */
+.search-bar {
+  position: relative; margin-bottom: 14px;
+}
+.search-bar input {
+  width: 100%; padding: 10px 14px 10px 38px;
+  border: 1.5px solid var(--gray-200); border-radius: 12px;
+  font-size: 0.88rem; background: white;
+  outline: none;
+}
+.search-bar input:focus { border-color: var(--primary); }
+.search-bar .s-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 1rem; color: var(--gray-500);
+}
+
+/* 설치 배너 */
+.install-banner {
+  display: none; position: fixed; bottom: 80px; left: 16px; right: 16px;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: white; padding: 14px 16px; border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+  z-index: 99; animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.install-banner .ib-title { font-weight: 700; font-size: 0.9rem; }
+.install-banner .ib-desc { font-size: 0.78rem; opacity: 0.9; margin-top: 4px; }
+.install-banner .ib-close {
+  position: absolute; top: 8px; right: 12px;
+  background: none; border: none; color: white;
+  font-size: 1.2rem; cursor: pointer; opacity: 0.7;
+}
+
+/* 공유 버튼 */
+.share-fab {
+  position: fixed; bottom: calc(80px + var(--safe-bottom));
+  right: 16px; width: 48px; height: 48px;
+  background: var(--primary); color: white;
+  border: none; border-radius: 50%;
+  box-shadow: 0 3px 12px rgba(37,99,235,0.4);
+  font-size: 1.3rem; cursor: pointer; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+}
+</style>
+</head>
+<body>
+
+<!-- 앱 헤더 -->
+<div class="app-header">
+  <h1>출산 완벽 체크리스트</h1>
+  <div class="sub">2026년 기준 | 충남 천안시</div>
+  <div class="progress-mini">
+    <div class="bar"><div class="fill" id="pFill" style="width:0%"></div></div>
+    <div class="text" id="pText">0/50</div>
+  </div>
+</div>
+
+
+<!-- ============ TAB 1: 체크리스트 ============ -->
+<div class="tab-content active" id="tab-check">
+
+  <div class="sub-tabs" id="phaseTabs">
+    <button class="sub-tab active" onclick="showPhase('all')">전체</button>
+    <button class="sub-tab" onclick="showPhase('p1')">P1 초기</button>
+    <button class="sub-tab" onclick="showPhase('p2')">P2 중기</button>
+    <button class="sub-tab" onclick="showPhase('p3')">P3 후기</button>
+    <button class="sub-tab" onclick="showPhase('p4')">P4 출산직후</button>
+    <button class="sub-tab" onclick="showPhase('p5')">P5 1개월내</button>
+    <button class="sub-tab" onclick="showPhase('p6')">P6 장기</button>
+  </div>
+
+  <div class="search-bar">
+    <span class="s-icon">&#128269;</span>
+    <input type="text" id="searchInput" placeholder="항목 검색..." oninput="filterCards()">
+  </div>
+
+  <!-- Phase 1: 임신 초기 -->
+  <div class="phase-group" data-phase="p1">
+    <div style="font-size:0.78rem;font-weight:700;color:var(--primary);margin:12px 0 8px;padding:4px 12px;background:var(--primary-light);border-radius:8px;display:inline-block;">Phase 1: 임신 초기 (1~12주)</div>
+
+    <div class="m-card" data-search="산부인과 임신확인서 발급">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c1" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">1. 산부인과 방문 - 임신확인서 발급</div>
+          <div class="m-card-desc">모든 출산 지원의 시작점</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">즉시</span><span class="m-tag" style="background:#dbeafe;color:#2563eb">산부인과</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-warn blue">임신 확인서가 있어야 국민행복카드, 보건소 등록 등이 가능합니다. 2부 이상 발급 권장.</div>
+          <div class="m-detail-label">절차</div>
+          <ol class="m-steps">
+            <li>생리 예정일 1~2주 후 산부인과 방문</li>
+            <li>초음파로 임신 확인 (태낭 확인)</li>
+            <li>임신확인서 발급 요청</li>
+            <li>다음 산전검진 일정 예약</li>
+          </ol>
+        </div>
+        <div class="m-detail-section">
+          <div class="m-detail-label">천안시 주요 산부인과</div>
+          <dl class="m-info-grid">
+            <dt>단국대병원</dt><dd>041-550-6580</dd>
+            <dt>순천향병원</dt><dd>041-570-2114</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="태아보험 가입 12주">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c2" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">2. 태아보험 가입 (12주 전 필수)</div>
+          <div class="m-card-desc">선천성이상/미숙아 보장은 22주 전에만 가입 가능</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">12주 전</span><span class="m-tag" style="background:#fef3c7;color:#d97706">보험</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn red"><strong>임신 22주 이후:</strong> 선천성이상/미숙아 특약 가입 불가</div>
+        <div class="m-detail-section">
+          <div class="m-detail-label">가입 팁</div>
+          <ol class="m-steps">
+            <li>비교사이트(보험다모아)에서 3개 이상 비교</li>
+            <li>선천성이상, 미숙아, 인큐베이터 특약 필수</li>
+            <li>태아 + 어린이보험 통합 상품 추천</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="국민행복카드 100만원 임산부 진료비">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c3" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">3. 국민행복카드 신청 (100만원)</div>
+          <div class="m-card-desc">임산부 진료비 100만원 + 교통비 10만원</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">100만원</span><span class="m-tag" style="background:#dbeafe;color:#2563eb">카드사</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <ol class="m-steps">
+            <li>임신확인서 준비</li>
+            <li>카드사 앱/은행 방문 (국민/신한/삼성 등)</li>
+            <li>국민행복카드 발급 신청</li>
+            <li>약 1주 후 카드 수령, 바우처 자동 충전</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="보건소 등록 엽산 철분 무료">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c4" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">4. 보건소 임산부 등록</div>
+          <div class="m-card-desc">엽산/철분제 무료, 초음파/검사 무료</div>
+          <div class="m-tags"><span class="m-tag" style="background:#d1fae5;color:#059669">무료</span><span class="m-tag" style="background:#dbeafe;color:#2563eb">보건소</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">무료 서비스</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>엽산제 (임신 초기~12주)</li>
+            <li>철분제 (임신 16주~출산)</li>
+            <li>기형아 검사, 풍진항체 검사</li>
+            <li>구강검진, 영양 상담</li>
+          </ul>
+        </div>
+        <dl class="m-info-grid">
+          <dt>동남구보건소</dt><dd><a href="tel:041-521-2651">041-521-2651</a></dd>
+          <dt>서북구보건소</dt><dd><a href="tel:041-521-2552">041-521-2552</a></dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="산부인과 선택 정기검진">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c5" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">5. 산부인과 선택 & 정기검진 시작</div>
+          <div class="m-card-desc">주치의 선택, 검진 스케줄 시작</div>
+          <div class="m-tags"><span class="m-tag" style="background:#dbeafe;color:#2563eb">검진</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn blue">1~28주: 4주 간격 / 29~36주: 2주 간격 / 37주~: 매주 검진</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="친환경농산물 꾸러미 임산부">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c6" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">6. 친환경농산물 꾸러미 신청</div>
+          <div class="m-card-desc">월 4.8만원 상당 유기농 식품 배달</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">4.8만원/월</span><span class="m-tag" style="background:#d1fae5;color:#059669">배달</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">신청 방법</div>
+          <ol class="m-steps">
+            <li>보건소 임산부 등록 후 안내 받기</li>
+            <li>에코이몰(ecoemall.com) 에서 신청</li>
+            <li>주 1회 유기농 채소/과일 배달</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="부부 출산교육 준비물 교실">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c7" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">7. 부부 출산교육 신청</div>
+          <div class="m-card-desc">보건소/병원 무료 교육, 신생아 돌보기 실습</div>
+          <div class="m-tags"><span class="m-tag" style="background:#d1fae5;color:#059669">무료</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn blue">보건소 출산준비교실: 매월 접수, 선착순. 임신 20주 이후 권장.</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="회사 임신 보고 단축근무">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c8" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">8. 회사에 임신 보고 & 단축근무 신청</div>
+          <div class="m-card-desc">임신 12주 이내, 36주 이후 단축근무 보장</div>
+          <div class="m-tags"><span class="m-tag" style="background:#ede9fe;color:#7c3aed">근로기준법</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">근로기준법 보장 사항</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>임신 12주 이내 & 36주 이후: 1일 2시간 단축</li>
+            <li>시간외근로 면제 (연장/야간/휴일)</li>
+            <li>임산부 해고 금지</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 2: 임신 중기 -->
+  <div class="phase-group" data-phase="p2">
+    <div style="font-size:0.78rem;font-weight:700;color:var(--success);margin:16px 0 8px;padding:4px 12px;background:var(--success-light);border-radius:8px;display:inline-block;">Phase 2: 임신 중기 (13~28주)</div>
+
+    <div class="m-card" data-search="산후조리원 예약 비용">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c9" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">9. 산후조리원 예약</div>
+          <div class="m-card-desc">인기 조리원은 6개월 전 마감. 조기 예약 필수!</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">20주 전</span><span class="m-tag" style="background:#fef3c7;color:#d97706">200~500만원</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">체크포인트</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>1인실/2인실 가격 차이 확인</li>
+            <li>신생아실 간호사 비율 (1:3 이상)</li>
+            <li>모유수유 전문가 상주 여부</li>
+            <li>24시간 CCTV 및 출입통제</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="출산가방 입원 준비물">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c10" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">10. 출산가방(입원가방) 준비</div>
+          <div class="m-card-desc">28주까지 준비 완료 권장</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">28주까지</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">필수 준비물</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>산모: 수유브라, 산모패드, 세면도구, 편한옷</li>
+            <li>아기: 배냇저고리, 속싸개, 카시트</li>
+            <li>서류: 신분증, 산모수첩, 보험증, 국민행복카드</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="육아휴직 신청 준비 회사">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c11" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">11. 육아휴직 사전 준비</div>
+          <div class="m-card-desc">출산 30일 전 서면 통보 + 인수인계</div>
+          <div class="m-tags"><span class="m-tag" style="background:#ede9fe;color:#7c3aed">회사</span><span class="m-tag" style="background:#fee2e2;color:#dc2626">30일 전</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn yellow"><strong>6+6 부모육아휴직제:</strong> 부모 모두 휴직 시 첫 6개월 급여 상한 월 450만원!</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="아기방 꾸미기 가구 침대">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c12" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">12. 아기방 꾸미기 & 용품 준비</div>
+          <div class="m-card-desc">아기 침대, 수유용품, 기저귀, 의류</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">용품</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">필수 구매 목록</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>아기 침대/바구니 + 방수패드</li>
+            <li>배냇저고리 3~5벌 + 내의 3~5벌</li>
+            <li>신생아 기저귀 2~3팩 (NB사이즈)</li>
+            <li>젖병 2~4개 + 분유 1통 (비상용)</li>
+            <li>체온계, 손톱깎이, 콧물흡입기</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="카시트 구매 설치 신생아">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c13" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">13. 카시트 구매 & 설치</div>
+          <div class="m-card-desc">퇴원 시 필수! 신생아용 후향식 설치</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">퇴원 전</span><span class="m-tag" style="background:#ede9fe;color:#7c3aed">법적의무</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn red">카시트 미착용 시 범칙금 6만원. 퇴원 시에도 반드시 카시트 필요!</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="정밀초음파 기형아 검사 16주 20주">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c14" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">14. 정밀 초음파 & 기형아 검사</div>
+          <div class="m-card-desc">16~20주 기형아 검사, 20~24주 정밀초음파</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">16~24주</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn blue">쿼드/통합 검사(혈액), 정밀초음파(구조), NIPT(비침습DNA) 중 선택. 보건소 무료 or 국민행복카드로 결제.</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="임산부 치과 치료 스케일링">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c15" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">15. 치과 검진 & 치료</div>
+          <div class="m-card-desc">임신 중기가 치과 치료 적기</div>
+          <div class="m-tags"><span class="m-tag" style="background:#dbeafe;color:#2563eb">14~28주</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn blue">임신 초기/후기는 치과 치료 위험. 중기(14~28주)에 스케일링, 충치치료 완료 권장.</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="자동차보험 태아 탑승자 특약">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c16" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">16. 자동차보험 특약 변경</div>
+          <div class="m-card-desc">탑승자 상해 특약 추가, 블랙박스 확인</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">보험</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3: 임신 후기 -->
+  <div class="phase-group" data-phase="p3">
+    <div style="font-size:0.78rem;font-weight:700;color:var(--warning);margin:16px 0 8px;padding:4px 12px;background:var(--warning-light);border-radius:8px;display:inline-block;">Phase 3: 임신 후기 (29~40주)</div>
+
+    <div class="m-card" data-search="분만방법 자연분만 제왕절개 라마즈">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c17" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">17. 분만 방법 결정 & 출산 계획서</div>
+          <div class="m-card-desc">자연분만/제왕절개, 무통분만, 남편 입회</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">32주까지</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">출산 계획서 포함 사항</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>분만 방법 (자연분만/무통/제왕절개)</li>
+            <li>남편 분만실 입회 여부</li>
+            <li>탯줄 자르기 참여</li>
+            <li>모유수유 즉시 시도 여부</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="배우자출산휴가 20일 신청">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c18" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">18. 배우자 출산휴가 준비 (20일)</div>
+          <div class="m-card-desc">2025.2 개정: 10일 -> 20일, 3회 분할 가능</div>
+          <div class="m-tags"><span class="m-tag" style="background:#ede9fe;color:#7c3aed">법정</span><span class="m-tag" style="background:#fef3c7;color:#d97706">유급 20일</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn green"><strong>2025.2.23 개정:</strong> 배우자 출산휴가 20일 (유급), 최대 3회 분할 사용 가능. 출산 후 90일 이내 사용.</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="비상연락처 병원 택시 응급">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c19" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">19. 비상 연락처 & 경로 확보</div>
+          <div class="m-card-desc">병원까지 경로, 대리운전, 119 번호 저장</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">필수</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="산후도우미 바우처 신청">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c20" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">20. 산후도우미(건강관리사) 바우처 신청</div>
+          <div class="m-card-desc">출산 전 40일~출산 후 30일 신청 가능</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">바우처</span><span class="m-tag" style="background:#d1fae5;color:#059669">복지로</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn blue">복지로(bokjiro.go.kr)에서 신청. 소득 기준에 따라 본인부담금 차등. 출산 전 미리 신청!</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="출산진통 징후 이슬 양수">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c21" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">21. 출산 징후 & 대응법 숙지</div>
+          <div class="m-card-desc">이슬, 양수파수, 진통 간격 체크법</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">36주~</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">병원 가야 할 때</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>진통 간격 5~7분 (초산)</li>
+            <li>양수 파수 (맑은 물 느낌) -> 즉시 병원</li>
+            <li>출혈이 생리양보다 많을 때 -> 119</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4: 출산 직후 -->
+  <div class="phase-group" data-phase="p4">
+    <div style="font-size:0.78rem;font-weight:700;color:var(--danger);margin:16px 0 8px;padding:4px 12px;background:var(--danger-light);border-radius:8px;display:inline-block;">Phase 4: 출산 직후 (0~30일)</div>
+
+    <div class="m-card" data-search="출생신고 정부24 14일">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c22" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">22. 출생신고 (14일 이내)</div>
+          <div class="m-card-desc">정부24 온라인 가능, 행복출산 원스톱</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">14일 이내</span><span class="m-tag" style="background:#dbeafe;color:#2563eb">정부24</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn green"><strong>행복출산 원스톱:</strong> 정부24에서 출생신고와 동시에 부모급여, 아동수당, 첫만남이용권 등 한번에 신청!</div>
+        <div class="m-detail-section">
+          <ol class="m-steps">
+            <li>병원에서 출생증명서 발급받기</li>
+            <li>정부24 접속 -> 행복출산 원스톱 서비스</li>
+            <li>출생신고 + 각종 수당 동시 신청</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="건강보험 피부양자 등록 신생아">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c23" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">23. 건강보험 피부양자 등록</div>
+          <div class="m-card-desc">14일 이내 등록! 안하면 병원비 전액 자비</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">14일 이내</span><span class="m-tag" style="background:#fee2e2;color:#dc2626">필수</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn red">미등록 시 신생아 병원비를 전액 자비로 부담해야 합니다! 출생신고 후 즉시 건보공단에 등록.</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="부모급여 월 110만원 첫만남이용권 200만원">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c24" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">24. 부모급여 + 첫만남이용권 신청</div>
+          <div class="m-card-desc">부모급여 월 110만원 + 첫만남이용권 200만원</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">110만/월</span><span class="m-tag" style="background:#fef3c7;color:#d97706">200만 일시금</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn red"><strong>60일 내 신청 필수!</strong> 출생일 포함 60일 이후 신청 시 소급 불가, 월 110만원씩 날림</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="아동수당 월 10.5만원">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c25" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">25. 아동수당 신청 (월 10.5만원)</div>
+          <div class="m-card-desc">8세 미만까지 매월 지급</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">10.5만/월</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="천안시 출생축하금 100만원 충남">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c26" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">26. 천안시 출생축하금 신청 (100만원)</div>
+          <div class="m-card-desc">천안시 거주 시 첫째 100만원</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">100만원</span><span class="m-tag" style="background:#d1fae5;color:#059669">천안시</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <dl class="m-info-grid">
+            <dt>신청처</dt><dd>천안시 여성가족과</dd>
+            <dt>전화</dt><dd><a href="tel:041-521-5374">041-521-5374</a></dd>
+            <dt>서류</dt><dd>출생신고 완료 후 주민센터 방문 or 온라인</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="전기 가스 할인 출산 다자녀">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c27" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">27. 전기/가스 요금 할인 신청</div>
+          <div class="m-card-desc">월 약 4만원 할인 (전기+가스)</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">월 4만원</span><span class="m-tag" style="background:#fee2e2;color:#dc2626">소급불가</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-warn red">소급 적용 불가! 출산 즉시 한전(123), 도시가스(1644-2488)에 전화.</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="육아휴직 신청 급여 고용센터">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c28" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">28. 육아휴직 신청 & 급여 신청</div>
+          <div class="m-card-desc">회사에 신청 후, 고용24에서 급여 신청</div>
+          <div class="m-tags"><span class="m-tag" style="background:#ede9fe;color:#7c3aed">고용센터</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <ol class="m-steps">
+            <li>회사에 육아휴직 신청서 제출</li>
+            <li>휴직 시작 후 1개월 경과 시점</li>
+            <li>고용24(work24.go.kr)에서 급여 신청</li>
+          </ol>
+        </div>
+        <div class="m-warn green"><strong>6+6 제도:</strong> 부모 모두 육아휴직 시 첫 6개월 급여 상한 월 450만원 (2026년 기준)</div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="신생아 검진 BCG 예방접종 1개월">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c29" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">29. 신생아 1개월 검진 & BCG 접종</div>
+          <div class="m-card-desc">생후 4주 이내 BCG(결핵), B형간염 2차</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">4주 이내</span><span class="m-tag" style="background:#dbeafe;color:#2563eb">소아과</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="산모 산후검진 6주 자궁 회복">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c30" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">30. 산모 산후검진 예약 (6주)</div>
+          <div class="m-card-desc">자궁 회복 상태, 봉합 부위 확인</div>
+          <div class="m-tags"><span class="m-tag" style="background:#dbeafe;color:#2563eb">산부인과</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 5: 출산 1개월 이내 -->
+  <div class="phase-group" data-phase="p5">
+    <div style="font-size:0.78rem;font-weight:700;color:var(--purple);margin:16px 0 8px;padding:4px 12px;background:var(--purple-light);border-radius:8px;display:inline-block;">Phase 5: 출산 1개월 이내</div>
+
+    <div class="m-card" data-search="천안시 교통비 출산 택시비">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c31" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">31. 천안시 교통비 지원 신청</div>
+          <div class="m-card-desc">임산부 교통비 100만원 (충남도+천안시)</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">100만원</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="산후조리 바우처 100만원">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c32" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">32. 산후조리 비용 바우처 확인</div>
+          <div class="m-card-desc">천안시 산후조리비 지원 확인</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">바우처</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="소아과 지정 야간 응급 달빛">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c33" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">33. 단골 소아과 지정 & 야간진료 확인</div>
+          <div class="m-card-desc">달빛어린이병원, 야간 소아응급 확인</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">필수</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <dl class="m-info-grid">
+          <dt>순천향 소아응급</dt><dd><a href="tel:041-570-2114">041-570-2114</a> (24시간)</dd>
+          <dt>단국대 응급</dt><dd><a href="tel:041-550-7114">041-550-7114</a></dd>
+          <dt>달빛어린이병원</dt><dd>e-gen.or.kr/moonlight</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="영유아 건강검진 1차">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c34" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">34. 영유아 건강검진 1차 예약</div>
+          <div class="m-card-desc">생후 14~35일, 소아과에서 무료</div>
+          <div class="m-tags"><span class="m-tag" style="background:#d1fae5;color:#059669">무료</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="아이돌봄서비스 신청">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c35" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">35. 아이돌봄서비스 신청</div>
+          <div class="m-card-desc">시간제/종일제 돌봄, 대기 길어서 미리 신청</div>
+          <div class="m-tags"><span class="m-tag" style="background:#dbeafe;color:#2563eb">1577-2514</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="국민연금 출산크레딧">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c36" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">36. 국민연금 출산크레딧 신청</div>
+          <div class="m-card-desc">2026년 확대: 첫째 12개월, 둘째 18개월 가입기간 인정</div>
+          <div class="m-tags"><span class="m-tag" style="background:#ede9fe;color:#7c3aed">연금</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="연말정산 출산 인적공제 의료비">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c37" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">37. 연말정산 출산 공제 준비</div>
+          <div class="m-card-desc">출산 세액공제 30만원, 의료비 공제, 인적공제</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">환급</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <div class="m-detail-label">주요 공제 항목</div>
+          <ul style="padding-left:20px;font-size:0.82rem;">
+            <li>출산 세액공제: 30만원 (출산연도)</li>
+            <li>인적공제: 150만원 (배우자 총급여 500만 미만 시)</li>
+            <li>의료비: 산전검사+분만비+산후조리 전액 공제</li>
+            <li>보험료: 태아보험 세액공제 (12%)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 6: 장기 혜택 -->
+  <div class="phase-group" data-phase="p6">
+    <div style="font-size:0.78rem;font-weight:700;color:var(--teal);margin:16px 0 8px;padding:4px 12px;background:var(--teal-light);border-radius:8px;display:inline-block;">Phase 6: 장기 혜택 (2~12개월+)</div>
+
+    <div class="m-card" data-search="예방접종 2개월 4개월 DTaP 폐렴구균">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c38" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">38. 예방접종 일정 관리 (2~12개월)</div>
+          <div class="m-card-desc">DTaP, IPV, 폐렴구균, 로타 등 시기별 접종</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fee2e2;color:#dc2626">필수접종</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <table class="m-table">
+          <tr><th>시기</th><th>접종</th></tr>
+          <tr><td>출생</td><td>B형간염 1차, BCG</td></tr>
+          <tr><td>1개월</td><td>B형간염 2차</td></tr>
+          <tr><td>2개월</td><td>DTaP 1차, IPV 1차, 폐렴구균 1차, 로타 1차</td></tr>
+          <tr><td>4개월</td><td>DTaP 2차, IPV 2차, 폐렴구균 2차, 로타 2차</td></tr>
+          <tr><td>6개월</td><td>DTaP 3차, B형간염 3차, 폐렴구균 3차, 인플루엔자</td></tr>
+          <tr><td>12개월</td><td>MMR 1차, 수두, 일본뇌염, A형간염</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="영유아 건강검진 2차 3차">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c39" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">39. 영유아 건강검진 (2~7차)</div>
+          <div class="m-card-desc">4개월, 9개월, 18개월... 무료 검진</div>
+          <div class="m-tags"><span class="m-tag" style="background:#d1fae5;color:#059669">무료</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="신생아 특례대출 주택 청약">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c40" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">40. 신생아 특례대출 & 특별공급 확인</div>
+          <div class="m-card-desc">출산 2년 이내 주택 특례대출 1.6~3.3%</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">주택</span></div>
+        </div>
+      </div>
+      <div class="m-detail">
+        <div class="m-detail-section">
+          <dl class="m-info-grid">
+            <dt>특례대출</dt><dd>최대 5억원, 금리 1.6~3.3%</dd>
+            <dt>특별공급</dt><dd>소득기준: 도시근로자 월평균 160% 이하</dd>
+            <dt>청약홈</dt><dd>applyhome.co.kr</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="어린이집 입소 대기 보육료">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c41" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">41. 어린이집 입소 대기 신청</div>
+          <div class="m-card-desc">아이사랑 포털에서 대기 신청 (6개월~)</div>
+          <div class="m-tags"><span class="m-tag" style="background:#dbeafe;color:#2563eb">childcare.go.kr</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="K패스 다자녀 교통 환급">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c42" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">42. K-패스 다자녀 혜택 확인</div>
+          <div class="m-card-desc">대중교통 환급율 상향</div>
+          <div class="m-tags"><span class="m-tag" style="background:#d1fae5;color:#059669">교통</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-card" data-search="천안시 아빠 육아휴직 장려금 30만원">
+      <div class="m-card-header" onclick="toggleMDetail(this)">
+        <div class="m-check" data-id="c43" onclick="event.stopPropagation();toggleMCheck(this)"></div>
+        <div class="m-card-body">
+          <div class="m-card-title">43. 천안시 아빠 육아휴직 장려금</div>
+          <div class="m-card-desc">월 30만원 x 최대 6개월 = 180만원</div>
+          <div class="m-tags"><span class="m-tag" style="background:#fef3c7;color:#d97706">월 30만원</span><span class="m-tag" style="background:#d1fae5;color:#059669">천안시</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ TAB 2: 산모 가이드 ============ -->
+<div class="tab-content" id="tab-mom">
+
+  <div class="sub-tabs" id="momTabs">
+    <button class="sub-tab active" onclick="showMomSub('mom-all')">전체</button>
+    <button class="sub-tab" onclick="showMomSub('mom-recovery')">산후회복</button>
+    <button class="sub-tab" onclick="showMomSub('mom-diet')">식단</button>
+    <button class="sub-tab" onclick="showMomSub('mom-feed')">모유수유</button>
+    <button class="sub-tab" onclick="showMomSub('mom-exercise')">운동</button>
+    <button class="sub-tab" onclick="showMomSub('mom-mental')">정서관리</button>
+    <button class="sub-tab" onclick="showMomSub('mom-danger')">위험신호</button>
+  </div>
+
+  <!-- 산후조리 7단계 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#be185d;">시기별 산후조리 핵심 (7단계)</div>
+    <table class="m-table">
+      <tr><th>시기</th><th>핵심</th><th>활동 수준</th></tr>
+      <tr><td style="font-weight:600;color:var(--danger)">1~3일</td><td>절대 안정, 자궁수축 확인</td><td>침대 위</td></tr>
+      <tr><td style="font-weight:600;color:var(--danger)">4~7일</td><td>좌욕 시작, 모유수유 확립</td><td>실내 걷기</td></tr>
+      <tr><td style="font-weight:600;color:var(--warning)">2주차</td><td>오로 줄어듦, 수유 패턴 형성</td><td>가벼운 집안일</td></tr>
+      <tr><td style="font-weight:600;color:var(--warning)">3주차</td><td>기초 체력 회복, 산책 시작</td><td>15분 산책</td></tr>
+      <tr><td style="font-weight:600;color:var(--primary)">4주차</td><td>활동량 점진적 증가</td><td>30분 산책</td></tr>
+      <tr><td style="font-weight:600;color:var(--primary)">5~6주</td><td>산후검진, 운동 재개 가능</td><td>가벼운 운동</td></tr>
+      <tr><td style="font-weight:600;color:var(--success)">7~8주+</td><td>일상 복귀, 직장복귀 준비</td><td>정상 활동</td></tr>
+    </table>
+  </div>
+
+  <!-- 자연분만 vs 제왕절개 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#be185d;">자연분만 vs 제왕절개</div>
+    <table class="m-table">
+      <tr><th>항목</th><th>자연분만</th><th>제왕절개</th></tr>
+      <tr><td>입원</td><td>2~3일</td><td>5~7일</td></tr>
+      <tr><td>통증</td><td>회음부 (1~2주)</td><td>절개부위 (4~6주)</td></tr>
+      <tr><td>샤워</td><td>2~3일 후</td><td>실밥 제거 후 (7~10일)</td></tr>
+      <tr><td>운동</td><td>2주 후 가능</td><td>6주 후 가능</td></tr>
+      <tr><td>다음 임신</td><td>제한 없음</td><td>최소 1년 권장</td></tr>
+    </table>
+  </div>
+
+  <!-- 산후 통증 관리 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#be185d;">산후 통증 관리</div>
+    <table class="m-table">
+      <tr><th>통증</th><th>기간</th><th>관리법</th></tr>
+      <tr><td>후산기(자궁수축)</td><td>3~7일</td><td>아이스팩/온팩, 수유 시 심화 정상</td></tr>
+      <tr><td>회음부 통증</td><td>1~2주</td><td>좌욕, 도넛방석, 아이스팩</td></tr>
+      <tr><td>유방울혈</td><td>3~5일</td><td>자주 수유, 냉찜질, 양배추잎</td></tr>
+      <tr><td>두통/어지러움</td><td>1~2주</td><td>수분 섭취, 철분제</td></tr>
+      <tr><td>허리/골반통</td><td>4~8주</td><td>자세 교정, 골반벨트</td></tr>
+    </table>
+  </div>
+
+  <!-- 오로 변화 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#be185d;">오로(악로) 변화 -- 정상 vs 이상</div>
+    <table class="m-table">
+      <tr><th>시기</th><th>색상</th><th>정상</th><th>이상(병원!)</th></tr>
+      <tr><td>1~3일</td><td style="color:#dc2626;font-weight:700">선홍색</td><td>생리 양 정도</td><td>자몽 크기 혈전</td></tr>
+      <tr><td>4~10일</td><td style="color:#b45309;font-weight:700">갈색/핑크</td><td>양 감소</td><td>갑자기 빨간색 재출현</td></tr>
+      <tr><td>11~21일</td><td style="color:#d97706;font-weight:700">노란색/크림</td><td>소량</td><td>악취 + 발열</td></tr>
+      <tr><td>22~42일</td><td>투명/흰색</td><td>거의 없음</td><td>6주 넘어 지속</td></tr>
+    </table>
+  </div>
+
+  <!-- 산모 하루 일과표 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#be185d;">산모 하루 일과표</div>
+    <div class="guide-sub" style="color:var(--danger);">1주차: 절대 안정기</div>
+    <table class="m-table">
+      <tr><th>시간</th><th>활동</th></tr>
+      <tr><td>06:00</td><td>수유 + 물 한 잔</td></tr>
+      <tr><td>07:00</td><td>아침 식사 (미역국 + 잡곡밥)</td></tr>
+      <tr><td>08:00</td><td>좌욕 or 온찜질 + 케겔운동 10회</td></tr>
+      <tr><td>09:00</td><td>수유 + 보충 수면</td></tr>
+      <tr><td>12:00</td><td>점심 + 간식(호두/견과류)</td></tr>
+      <tr><td>15:00</td><td>수유 + 스트레칭</td></tr>
+      <tr><td>18:00</td><td>저녁 식사 + 짧은 실내 걷기</td></tr>
+      <tr><td>21:00</td><td>수유 + 좌욕 + 취침 준비</td></tr>
+      <tr><td>00:00~</td><td>야간 수유 (2~3시간 간격)</td></tr>
+    </table>
+  </div>
+
+  <!-- 식단 가이드 -->
+  <div class="guide-section" data-momsub="mom-diet">
+    <div class="guide-title" style="color:#047857;">산모 식단 가이드</div>
+    <div class="guide-sub">시기별 식단</div>
+    <table class="m-table">
+      <tr><th>시기</th><th>아침</th><th>점심</th><th>저녁</th><th>간식</th></tr>
+      <tr><td style="font-weight:600">1~2주</td><td>미역국+잡곡</td><td>황태국+나물</td><td>소고기무국+두부</td><td>호두,대추차</td></tr>
+      <tr><td style="font-weight:600">3~4주</td><td>잡곡밥+된장찌개</td><td>닭가슴살+샐러드</td><td>생선구이+나물</td><td>고구마,우유</td></tr>
+      <tr><td style="font-weight:600">5~6주</td><td>오트밀+과일</td><td>불고기+잡채</td><td>연어+현미밥</td><td>그릭요거트</td></tr>
+    </table>
+    <div class="guide-sub">수유부 영양소 필요량</div>
+    <table class="m-table">
+      <tr><th>영양소</th><th>일일 필요량</th><th>주요 식품</th></tr>
+      <tr><td>칼로리</td><td>+500kcal (수유부)</td><td>잡곡밥, 고기, 견과류</td></tr>
+      <tr><td>단백질</td><td>71g/일</td><td>닭가슴살, 두부, 달걀</td></tr>
+      <tr><td>철분</td><td>14mg/일</td><td>소고기, 시금치, 굴</td></tr>
+      <tr><td>칼슘</td><td>1,000mg/일</td><td>우유, 멸치, 치즈</td></tr>
+      <tr><td>수분</td><td>2.5~3L/일</td><td>물, 보리차, 미역국</td></tr>
+    </table>
+    <div class="m-warn red" style="margin-top:10px;"><strong>절대 먹으면 안 되는 것:</strong> 카페인 300mg+ (커피 2잔 이상), 날생선, 알코올, 꿀 (12개월 미만 아기에게 위험)</div>
+  </div>
+
+  <!-- 모유수유 가이드 -->
+  <div class="guide-section" data-momsub="mom-feed">
+    <div class="guide-title" style="color:#a16207;">모유수유 자세 상세 가이드</div>
+    <div class="guide-sub">올바른 젖물림(래치온) 체크</div>
+    <ul class="print-check" id="latchCheck">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아기 입이 크게 벌어져 있다 (120도 이상)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아랫입술이 바깥으로 말려있다</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>유륜 아래쪽이 위쪽보다 더 많이 물려있다</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>"꿀꺽" 삼키는 소리가 들린다</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>엄마 유두에 통증이 없다</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아기 턱이 유방에 닿아있다</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>수유 후 유두가 찌그러지지 않았다</li>
+    </ul>
+    <div class="guide-sub">4가지 대표 수유 자세</div>
+    <table class="m-table">
+      <tr><th>자세</th><th>설명</th><th>추천 상황</th></tr>
+      <tr><td style="font-weight:600">요람식</td><td>아기를 팔로 안고 수유</td><td>기본 자세, 앉아서</td></tr>
+      <tr><td style="font-weight:600">교차요람</td><td>반대쪽 팔로 아기 머리 지지</td><td>신생아, 래치온 연습</td></tr>
+      <tr><td style="font-weight:600">풋볼식</td><td>아기를 옆구리에 끼고</td><td>제왕절개, 쌍둥이</td></tr>
+      <tr><td style="font-weight:600">누워서</td><td>엄마와 아기 모두 옆으로</td><td>야간 수유, 피로 시</td></tr>
+    </table>
+    <div class="guide-sub">수유 시간표 (0~3개월)</div>
+    <table class="m-table">
+      <tr><th>시기</th><th>간격</th><th>1회 시간</th><th>하루 횟수</th></tr>
+      <tr><td>0~2주</td><td>1.5~2시간</td><td>양쪽 각 10~15분</td><td>10~12회</td></tr>
+      <tr><td>2~6주</td><td>2~3시간</td><td>양쪽 각 15~20분</td><td>8~10회</td></tr>
+      <tr><td>6주~3개월</td><td>3~4시간</td><td>양쪽 각 10~15분</td><td>6~8회</td></tr>
+    </table>
+    <div class="m-warn blue">모유수유 트러블슈팅: 유두균열 -> 라놀린 크림, 유선염(발열+통증) -> 즉시 병원, 젖몸살 -> 자주 비우기 + 냉찜질</div>
+  </div>
+
+  <!-- 산후 회복 체조 -->
+  <div class="guide-section" data-momsub="mom-exercise">
+    <div class="guide-title" style="color:#0f766e;">산후 회복 체조 상세 가이드</div>
+    <div class="guide-sub" style="color:var(--danger);">1단계: 출산 직후~2주 (침대 위)</div>
+    <ul style="padding-left:20px;font-size:0.82rem;">
+      <li><strong>케겔운동:</strong> 5초 조이기 -> 10초 휴식 x 10회 x 하루 3세트</li>
+      <li><strong>발목 펌프:</strong> 발목 위아래 20회 (혈전 예방)</li>
+      <li><strong>복식호흡:</strong> 코로 4초 흡 -> 8초 천천히 내쉬기 x 10회</li>
+    </ul>
+    <div class="guide-sub" style="color:var(--warning);">2단계: 2~4주 (바닥 운동)</div>
+    <ul style="padding-left:20px;font-size:0.82rem;">
+      <li><strong>브릿지:</strong> 누워서 엉덩이 들기 10회 x 3세트</li>
+      <li><strong>고양이-소 스트레칭:</strong> 네발 기기 자세에서 10회</li>
+      <li><strong>벽 스쿼트:</strong> 벽에 등 대고 5초 유지 x 10회</li>
+    </ul>
+    <div class="guide-sub" style="color:var(--primary);">3단계: 4~6주 (활동적 운동)</div>
+    <ul style="padding-left:20px;font-size:0.82rem;">
+      <li><strong>30분 산책:</strong> 매일 꾸준히</li>
+      <li><strong>플랭크:</strong> 10초부터 시작, 점진 증가</li>
+      <li><strong>스쿼트:</strong> 맨몸 15회 x 3세트</li>
+    </ul>
+    <div class="m-warn yellow"><strong>복직근 이개 자가 체크:</strong> 누워서 머리 들기 -> 배꼽 주변 손가락 넣기 -> 2손가락 이상 벌어져 있으면 전문가 상담 필요</div>
+  </div>
+
+  <!-- 정서 관리 -->
+  <div class="guide-section" data-momsub="mom-mental">
+    <div class="guide-title" style="color:#b45309;">산모 정서 관리 실천 가이드</div>
+    <div class="guide-sub">매일 실천 루틴 (5-5-5 법칙)</div>
+    <table class="m-table">
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td style="font-weight:700;color:var(--primary)">5분 명상</td><td>아침 기상 후 눈 감고 심호흡</td></tr>
+      <tr><td style="font-weight:700;color:var(--success)">5분 일기</td><td>감사한 것 3가지 적기</td></tr>
+      <tr><td style="font-weight:700;color:var(--purple)">5분 스트레칭</td><td>목/어깨/허리 풀기</td></tr>
+    </table>
+    <div class="guide-sub">남편이 해야 할 정서 지지</div>
+    <ul class="print-check" id="dadSupportCheck">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>매일 "오늘 힘들었지? 잘하고 있어" 말하기</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>야간 수유 1회 이상 교대하기</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>주 1회 아내 혼자만의 시간 만들어주기</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>가사 분담: 설거지/빨래/청소 중 2개 이상</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아내 이야기 끝까지 듣기 (조언 NO, 공감 YES)</li>
+    </ul>
+    <div class="m-warn red" style="margin-top:10px;"><strong>산후우울증 위험 신호:</strong> 2주 이상 우울/무기력, 아기에 대한 무관심/거부감, 수면장애, 식욕변화 -> 즉시 전문 상담 (1577-0199)</div>
+  </div>
+
+  <!-- 위험 신호 -->
+  <div class="guide-section" data-momsub="mom-danger">
+    <div class="guide-title" style="color:var(--danger);">산모 위험 신호 종합표</div>
+    <table class="m-table">
+      <tr><th>긴급도</th><th>증상</th><th>대응</th></tr>
+      <tr style="background:#fee2e2"><td style="font-weight:700;color:#dc2626">119</td><td>대량 출혈 (패드 1시간 내 적심)</td><td style="font-weight:700;color:#dc2626">즉시 119</td></tr>
+      <tr style="background:#fee2e2"><td style="font-weight:700;color:#dc2626">119</td><td>의식 혼미, 시야 흐림</td><td style="font-weight:700;color:#dc2626">즉시 119</td></tr>
+      <tr style="background:#fee2e2"><td style="font-weight:700;color:#dc2626">119</td><td>호흡곤란, 가슴 통증</td><td style="font-weight:700;color:#dc2626">즉시 119</td></tr>
+      <tr style="background:#fef3c7"><td style="font-weight:700;color:#d97706">응급</td><td>38도 이상 발열 + 오한</td><td>당일 응급실</td></tr>
+      <tr style="background:#fef3c7"><td style="font-weight:700;color:#d97706">응급</td><td>종아리 부종 + 통증 (혈전 의심)</td><td>당일 응급실</td></tr>
+      <tr style="background:#fef3c7"><td style="font-weight:700;color:#d97706">응급</td><td>봉합부위 벌어짐/고름</td><td>당일 산부인과</td></tr>
+      <tr><td style="font-weight:700;color:var(--warning)">긴급</td><td>소변 시 강한 통증/혈뇨</td><td>24시간 내 진료</td></tr>
+      <tr><td style="font-weight:700;color:var(--warning)">긴급</td><td>유방 단단+발열 (유선염)</td><td>24시간 내 진료</td></tr>
+    </table>
+  </div>
+
+  <!-- 산후조리원 vs 자택 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#4338ca;">산후조리원 vs 자택 비교</div>
+    <table class="m-table">
+      <tr><th>항목</th><th>산후조리원</th><th>자택 산후조리</th></tr>
+      <tr><td>비용</td><td>200~500만원 (2주)</td><td>산후도우미 100~200만원</td></tr>
+      <tr><td>장점</td><td>전문 관리, 수유지도, 식사제공</td><td>편안한 환경, 가족 밀착</td></tr>
+      <tr><td>단점</td><td>감염 위험, 면회 제한</td><td>산모 부담, 가사 부담</td></tr>
+      <tr><td>추천</td><td>첫째, 제왕절개</td><td>둘째 이상, 가족 도움 있을 때</td></tr>
+    </table>
+  </div>
+
+  <!-- 피부/탈모 관리 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#6d28d9;">산모 피부/탈모/신체 변화 관리</div>
+    <div class="guide-sub">산후 탈모</div>
+    <ul style="padding-left:20px;font-size:0.82rem;">
+      <li>시기: 출산 3~6개월 후 시작, 12개월 내 회복</li>
+      <li>대처: 단백질+철분+아연 충분 섭취, 두피 마사지</li>
+      <li>피해야 할 것: 파마/염색 (출산 후 6개월 이후 권장)</li>
+    </ul>
+    <div class="guide-sub">수면 전략</div>
+    <table class="m-table">
+      <tr><th>방식</th><th>설명</th><th>추천</th></tr>
+      <tr><td style="font-weight:600">시프트제</td><td>전반/후반 나눠 교대</td><td>부부 동시 재택 시</td></tr>
+      <tr><td style="font-weight:600">격일제</td><td>홀수/짝수일 교대</td><td>출근 일정 있을 때</td></tr>
+      <tr><td style="font-weight:600">보충제</td><td>야간은 한쪽, 낮잠 보충</td><td>한쪽만 재택 시</td></tr>
+    </table>
+  </div>
+
+  <!-- 방문객 관리 -->
+  <div class="guide-section" data-momsub="mom-mental">
+    <div class="guide-title" style="color:#334155;">방문객 관리 가이드</div>
+    <div class="m-warn yellow">
+      <strong>카톡 공유용 안내 메시지:</strong><br>
+      "감사합니다! 산모와 아기 건강을 위해 부탁드립니다:<br>
+      - 방문 전 연락 주세요 (수유/수면 시간 조율)<br>
+      - 방문 시 손 씻기 + 마스크<br>
+      - 30분 이내로 부탁드립니다<br>
+      - 감기/컨디션 안 좋을 때는 다음에 뵙겠습니다"
+    </div>
+  </div>
+
+  <!-- 매일 체크리스트 -->
+  <div class="guide-section" data-momsub="mom-recovery">
+    <div class="guide-title" style="color:#be185d;">산모 매일 체크리스트</div>
+    <div class="guide-sub" style="color:var(--danger);">아침 (AM)</div>
+    <ul class="print-check" id="momAM">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>체온 측정 (36.5~37.5도)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>오로 양/색 확인</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>유방 상태 확인 (울혈/멍울)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>물 한 잔 마시기</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>철분제/영양제 복용</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아침 식사</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>케겔 운동 1세트</li>
+    </ul>
+    <div class="guide-sub" style="color:var(--primary);">저녁 (PM)</div>
+    <ul class="print-check" id="momPM">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>수유 기록 확인 (횟수/시간)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>수분 섭취량 체크 (2.5L+)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>좌욕/샤워</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>스트레칭 5분</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>기분/감정 점검</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>내일 준비 (기저귀/분유 재고)</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ============ TAB 3: 아기 가이드 ============ -->
+<div class="tab-content" id="tab-baby">
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showBabySub('baby-all')">전체</button>
+    <button class="sub-tab" onclick="showBabySub('baby-care')">기본케어</button>
+    <button class="sub-tab" onclick="showBabySub('baby-feed')">수유/분유</button>
+    <button class="sub-tab" onclick="showBabySub('baby-health')">건강/접종</button>
+    <button class="sub-tab" onclick="showBabySub('baby-dev')">발달</button>
+  </div>
+
+  <!-- 절대 금지 -->
+  <div class="guide-section" data-babysub="baby-care">
+    <div class="guide-title" style="color:var(--danger);">절대 하면 안 되는 것 (생명 위험)</div>
+    <div class="m-warn red">
+      <ul style="padding-left:18px;margin:0;line-height:2;">
+        <li><strong>엎드려 재우기</strong> -- 영아돌연사(SIDS) 위험</li>
+        <li><strong>흔들기</strong> -- 흔들린아이증후군(뇌출혈/사망)</li>
+        <li><strong>꿀 먹이기</strong> -- 12개월 미만 보톨리눔독소 위험</li>
+        <li><strong>이불/인형 같이</strong> -- 질식 위험, 딱딱한 매트리스만</li>
+        <li><strong>카시트 미착용</strong> -- 법적 의무 + 생존율 71% 차이</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 수유량 가이드 -->
+  <div class="guide-section" data-babysub="baby-feed">
+    <div class="guide-title" style="color:#1e40af;">주차별 수유량 가이드</div>
+    <table class="m-table">
+      <tr><th>시기</th><th>1회량</th><th>간격</th><th>하루 총량</th></tr>
+      <tr><td>1~3일</td><td>5~15ml</td><td>1~2시간</td><td>50~100ml</td></tr>
+      <tr><td>4~7일</td><td>30~60ml</td><td>2~3시간</td><td>300~500ml</td></tr>
+      <tr><td>2주</td><td>60~90ml</td><td>2~3시간</td><td>500~700ml</td></tr>
+      <tr><td>1개월</td><td>90~120ml</td><td>3시간</td><td>600~800ml</td></tr>
+      <tr><td>2~3개월</td><td>120~150ml</td><td>3~4시간</td><td>700~900ml</td></tr>
+      <tr><td>4~6개월</td><td>150~200ml</td><td>4시간</td><td>800~1000ml</td></tr>
+    </table>
+    <div class="m-warn blue"><strong>분유 온도:</strong> 70도 물로 타서 체온(36~37도)까지 식힌 후 수유. 남은 분유는 1시간 내 폐기.</div>
+  </div>
+
+  <!-- 트림 시키기 -->
+  <div class="guide-section" data-babysub="baby-feed">
+    <div class="guide-title" style="color:#1e40af;">트림 시키기 (수유 후 필수)</div>
+    <table class="m-table">
+      <tr><th>방법</th><th>자세</th><th>팁</th></tr>
+      <tr><td style="font-weight:600">어깨 올리기</td><td>아기 세워서 어깨에 올려 등 토닥</td><td>가장 효과적, 수건 필수</td></tr>
+      <tr><td style="font-weight:600">무릎 앉히기</td><td>내 무릎에 앉혀 한 손으로 턱 받쳐 등 토닥</td><td>소량 수유 후</td></tr>
+      <tr><td style="font-weight:600">엎드리기</td><td>내 무릎 위에 아기 엎어 등 쓸어주기</td><td>효과 좋으나 주의 필요</td></tr>
+    </table>
+    <div class="m-warn yellow">5~10분 시도해도 안 나오면 그냥 세워서 15분 안아주기. 억지로 하지 않아도 됩니다.</div>
+  </div>
+
+  <!-- 목욕 가이드 -->
+  <div class="guide-section" data-babysub="baby-care">
+    <div class="guide-title" style="color:#1e40af;">목욕 상세 가이드</div>
+    <table class="m-table">
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>수온</td><td>37~38도 (팔꿈치로 확인)</td></tr>
+      <tr><td>시간</td><td>5~10분 이내</td></tr>
+      <tr><td>빈도</td><td>2~3일 1회 (매일 X)</td></tr>
+      <tr><td>배꼽관리</td><td>탈락 전: 물 닿지 않게, 알코올 소독</td></tr>
+      <tr><td>순서</td><td>얼굴 -> 머리 -> 몸통 -> 팔다리 -> 엉덩이</td></tr>
+    </table>
+  </div>
+
+  <!-- 기저귀 & 대변 -->
+  <div class="guide-section" data-babysub="baby-care">
+    <div class="guide-title" style="color:#1e40af;">기저귀 & 대변 가이드</div>
+    <table class="m-table">
+      <tr><th>시기</th><th>색상</th><th>정상</th></tr>
+      <tr><td>1~2일</td><td style="color:#1e3a2c;font-weight:700">검녹색 (태변)</td><td>끈적하고 점도 높음</td></tr>
+      <tr><td>3~5일</td><td style="color:#854d0e;font-weight:700">황녹색 (전환변)</td><td>태변 -> 정상변 전환</td></tr>
+      <tr><td>모유</td><td style="color:#ca8a04;font-weight:700">노란 겨자색</td><td>무르고 씨앗 같은 알갱이, 하루 3~8회</td></tr>
+      <tr><td>분유</td><td style="color:#92400e;font-weight:700">연갈색</td><td>점토 같은 질감, 하루 1~3회</td></tr>
+    </table>
+    <div class="m-warn red"><strong>병원 가야 할 대변:</strong> 빨간색(혈변), 검은색(소화출혈), 하얀색(담도이상), 심한 녹색+악취(감염)</div>
+  </div>
+
+  <!-- 체온 측정 -->
+  <div class="guide-section" data-babysub="baby-health">
+    <div class="guide-title" style="color:#1e40af;">체온 측정법</div>
+    <table class="m-table">
+      <tr><th>부위</th><th>정상</th><th>발열</th><th>방법</th></tr>
+      <tr><td>겨드랑이</td><td>36.0~37.2</td><td style="color:var(--danger);font-weight:700">37.5 이상</td><td>5분 유지 (가장 안전)</td></tr>
+      <tr><td>항문</td><td>36.6~38.0</td><td style="color:var(--danger);font-weight:700">38.0 이상</td><td>가장 정확 (3개월 미만 권장)</td></tr>
+      <tr><td>귀</td><td>36.4~37.8</td><td style="color:var(--danger);font-weight:700">38.0 이상</td><td>6개월 이후부터</td></tr>
+    </table>
+    <div class="m-warn red"><strong>3개월 미만 아기 38도 이상: 즉시 응급실!</strong> 해열제 자가투여 금지.</div>
+  </div>
+
+  <!-- 수면 가이드 -->
+  <div class="guide-section" data-babysub="baby-care">
+    <div class="guide-title" style="color:#1e40af;">안전한 수면 환경</div>
+    <ul class="print-check" id="sleepCheck">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>딱딱한 매트리스 사용</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>반드시 등으로 재우기 (바로 누운 자세)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>이불/베개/인형 없이</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>실내온도 20~22도</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>같은 방, 다른 침대 (Room sharing)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>수유 후 트림 시키고 재우기</li>
+    </ul>
+    <table class="m-table" style="margin-top:10px;">
+      <tr><th>월령</th><th>총 수면</th><th>낮잠</th><th>밤잠</th></tr>
+      <tr><td>0~1개월</td><td>16~18시간</td><td>불규칙</td><td>불규칙</td></tr>
+      <tr><td>1~3개월</td><td>15~17시간</td><td>3~4회</td><td>4~6시간 연속</td></tr>
+      <tr><td>3~6개월</td><td>14~16시간</td><td>2~3회</td><td>6~8시간 연속</td></tr>
+    </table>
+  </div>
+
+  <!-- 위험 신호 -->
+  <div class="guide-section" data-babysub="baby-health">
+    <div class="guide-title" style="color:var(--danger);">아기 위험 신호 -- 즉시 병원!</div>
+    <table class="m-table">
+      <tr><th>신호</th><th>대응</th></tr>
+      <tr style="background:#fee2e2"><td>38도 이상 발열 (3개월 미만)</td><td style="font-weight:700;color:#dc2626">즉시 응급실</td></tr>
+      <tr style="background:#fee2e2"><td>경련/발작</td><td style="font-weight:700;color:#dc2626">119 호출</td></tr>
+      <tr style="background:#fee2e2"><td>입술/손톱 파랗게 변함</td><td style="font-weight:700;color:#dc2626">즉시 응급실</td></tr>
+      <tr style="background:#fee2e2"><td>호흡 곤란 (갈비뼈 함몰)</td><td style="font-weight:700;color:#dc2626">119 호출</td></tr>
+      <tr><td>6시간 이상 소변 없음 (탈수)</td><td>당일 소아과</td></tr>
+      <tr><td>수유 거부 + 축 처짐</td><td>당일 소아과</td></tr>
+      <tr><td>심한 구토 (분수토)</td><td>당일 소아과</td></tr>
+    </table>
+  </div>
+
+  <!-- 예방접종 일정 -->
+  <div class="guide-section" data-babysub="baby-health">
+    <div class="guide-title" style="color:#1e40af;">예방접종 일정 (0~12개월)</div>
+    <table class="m-table">
+      <tr><th>시기</th><th>접종명</th><th>보건소</th></tr>
+      <tr><td style="font-weight:600">출생</td><td>B형간염 1차 + BCG (결핵)</td><td>무료</td></tr>
+      <tr><td style="font-weight:600">1개월</td><td>B형간염 2차</td><td>무료</td></tr>
+      <tr><td style="font-weight:600">2개월</td><td>DTaP + IPV + Hib + PCV + 로타</td><td>무료 (로타 일부 유료)</td></tr>
+      <tr><td style="font-weight:600">4개월</td><td>DTaP + IPV + Hib + PCV + 로타</td><td>무료</td></tr>
+      <tr><td style="font-weight:600">6개월</td><td>DTaP + B형간염 + PCV + 인플루엔자</td><td>무료</td></tr>
+      <tr><td style="font-weight:600">12개월</td><td>MMR + 수두 + 일본뇌염 + A형간염</td><td>무료</td></tr>
+    </table>
+  </div>
+
+  <!-- 월별 발달 마일스톤 -->
+  <div class="guide-section" data-babysub="baby-dev">
+    <div class="guide-title" style="color:#be185d;">월별 발달 마일스톤</div>
+    <table class="m-table">
+      <tr><th>월령</th><th>신체</th><th>인지/사회</th></tr>
+      <tr><td style="font-weight:700">1개월</td><td>고개 잠시 들기, 주먹 쥐기</td><td>엄마 목소리 반응, 초점 20~30cm</td></tr>
+      <tr><td style="font-weight:700">2개월</td><td>목 가누기 시작</td><td>사회적 미소, 옹알이 시작</td></tr>
+      <tr><td style="font-weight:700">3개월</td><td>손 뻗어 잡기 시도</td><td>소리 나는 쪽 고개 돌림</td></tr>
+      <tr><td style="font-weight:700">4개월</td><td>뒤집기 시도, 목 완전 가눔</td><td>거울 보고 웃음, 낯가림 시작</td></tr>
+      <tr><td style="font-weight:700">6개월</td><td>앉기 시작, 이유식 시작</td><td>이름 반응, 까꿍 놀이</td></tr>
+      <tr><td style="font-weight:700">9개월</td><td>기기/붙잡고 서기</td><td>집게손 잡기, 엄마 찾기</td></tr>
+      <tr><td style="font-weight:700">12개월</td><td>걸음마 시도</td><td>첫 단어(맘마/엄마), 간단한 지시 이해</td></tr>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============ TAB 4: 아빠 가이드 ============ -->
+<div class="tab-content" id="tab-dad">
+
+  <!-- 아빠 하루 일과표 -->
+  <div class="guide-section">
+    <div class="guide-title" style="color:#b45309;">아빠 하루 일과표</div>
+    <table class="m-table">
+      <tr><th>시간</th><th>할 일</th></tr>
+      <tr><td style="font-weight:600">06:00</td><td>기상 + 아기 기저귀 교체 + 분유/모유 데우기</td></tr>
+      <tr><td style="font-weight:600">07:00</td><td>아내 아침 준비 (미역국, 과일) + 빨래 돌리기</td></tr>
+      <tr><td style="font-weight:600">08:00</td><td>아기 놀아주기 (터미타임 5분) + 아내 씻을 시간</td></tr>
+      <tr><td style="font-weight:600">12:00</td><td>점심 준비 or 배달 + 아기 돌보기</td></tr>
+      <tr><td style="font-weight:600">15:00</td><td>아기 산책 (유모차) + 아내 낮잠 시간 확보</td></tr>
+      <tr><td style="font-weight:600">18:00</td><td>저녁 준비 + 아기 목욕 보조</td></tr>
+      <tr><td style="font-weight:600">20:00</td><td>설거지 + 집안 정리 + 아기 재우기</td></tr>
+      <tr><td style="font-weight:600">22:00</td><td>야간 수유 1회 담당 (분유/짠 모유)</td></tr>
+    </table>
+  </div>
+
+  <!-- 주차별 체크리스트 -->
+  <div class="guide-section">
+    <div class="guide-title" style="color:#6d28d9;">주차별 체크리스트</div>
+
+    <div class="guide-sub" style="color:var(--danger);">1주차: 생존 모드</div>
+    <ul class="print-check" id="week1">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>출생신고 + 행복출산 원스톱 신청</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>건강보험 피부양자 등록</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>부모급여 + 첫만남이용권 신청</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>전기/가스 할인 신청</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>야간 수유 교대 루틴 정하기</li>
+    </ul>
+
+    <div class="guide-sub" style="color:var(--warning);">2주차: 적응기</div>
+    <ul class="print-check" id="week2">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>소아과 첫 방문 (BCG 접종)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>수유 패턴 기록 시작</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>산모 컨디션 매일 체크</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>사진 정리/공유 (가족용)</li>
+    </ul>
+
+    <div class="guide-sub" style="color:var(--primary);">3~4주차: 루틴 형성</div>
+    <ul class="print-check" id="week34">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>1개월 검진 예약</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아기 외출 첫 시도 (5~10분)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>육아휴직급여 고용24에서 신청</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>가족사진 촬영</li>
+    </ul>
+
+    <div class="guide-sub" style="color:var(--success);">5~8주차: 안정화</div>
+    <ul class="print-check" id="week58">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>산모 6주 산후검진 동행</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>2개월 예방접종 (DTaP 등)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>외출 루틴 확립</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>부부 데이트 (30분이라도)</li>
+    </ul>
+
+    <div class="guide-sub" style="color:var(--teal);">9~12주차: 패턴 정립</div>
+    <ul class="print-check" id="week912">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>100일 기념 준비</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>4개월 예방접종 예약</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>어린이집 사전 조사</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>직장복귀 계획 논의</li>
+    </ul>
+  </div>
+
+  <!-- 아빠 멘탈 관리 -->
+  <div class="guide-section">
+    <div class="guide-title" style="color:#4338ca;">아빠 멘탈 관리</div>
+    <div class="guide-sub">수면 부족 대처법</div>
+    <ul style="padding-left:20px;font-size:0.82rem;">
+      <li>20분 파워냅 (알람 필수, 30분 넘기지 않기)</li>
+      <li>카페인은 오후 2시 이전만</li>
+      <li>주말 "캐치업 수면" 확보 (한쪽이 3~4시간 몰아자기)</li>
+    </ul>
+    <div class="guide-sub">부부 갈등 예방</div>
+    <ul style="padding-left:20px;font-size:0.82rem;">
+      <li>"당신이 틀렸어" 대신 "나는 이렇게 느꼈어" 사용</li>
+      <li>가사 분담표 만들기 (구체적으로)</li>
+      <li>주 1회 30분 "부부 대화 시간" 정하기</li>
+      <li>SNS에서 완벽한 육아 이미지 비교 금지</li>
+    </ul>
+    <div class="guide-sub">아빠 우울증 자가 체크</div>
+    <div class="m-warn yellow">
+      아래 증상이 2주 이상 지속되면 전문 상담 필요:<br>
+      - 이유 없는 분노/짜증 폭발<br>
+      - 아기/가족과 함께 있기 회피<br>
+      - 음주량 급증<br>
+      - 직장에서 집중력 심각 저하<br>
+      - "내가 아빠 자격이 없다" 반복 생각<br>
+      <br>
+      <strong>상담:</strong> 정신건강위기상담 <a href="tel:1577-0199" style="color:var(--primary);font-weight:700;">1577-0199</a> (24시간)
+    </div>
+  </div>
+
+  <!-- 아빠 일일 체크리스트 -->
+  <div class="guide-section">
+    <div class="guide-title" style="color:#6d28d9;">아빠 매일 체크리스트</div>
+    <ul class="print-check" id="dadDaily">
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아내에게 "고마워" / "잘하고 있어" 말하기</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>기저귀 교체 2회 이상</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>야간 수유 1회 교대</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아내 식사 준비 (1끼 이상)</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>아기 안아주기/스킨십 30분</li>
+      <li onclick="togglePC(this)"><span class="pc-box"></span>설거지/빨래/청소 중 1가지</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ TAB 5: 금액/연락처 ============ -->
+<div class="tab-content" id="tab-info">
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showInfoSub('info-money')">금액 정리</button>
+    <button class="sub-tab" onclick="showInfoSub('info-contact')">연락처</button>
+    <button class="sub-tab" onclick="showInfoSub('info-trap')">함정 TOP8</button>
+  </div>
+
+  <!-- 금액 정리 -->
+  <div id="info-money">
+    <div class="guide-section">
+      <div class="guide-title" style="color:var(--warning);">소득 무관 (100% 수령 가능)</div>
+      <div class="money-mini">
+        <div class="money-item"><div class="cat" style="background:#d1fae5;color:#059669">일시금</div><div class="amt" style="color:var(--primary)">200만</div><div class="lbl">첫만남이용권</div></div>
+        <div class="money-item"><div class="cat" style="background:#d1fae5;color:#059669">일시금</div><div class="amt" style="color:var(--primary)">100만</div><div class="lbl">천안시 출생축하금</div></div>
+        <div class="money-item"><div class="cat" style="background:#dbeafe;color:#2563eb">매월</div><div class="amt" style="color:var(--success)">110만</div><div class="lbl">부모급여 (0세)</div></div>
+        <div class="money-item"><div class="cat" style="background:#dbeafe;color:#2563eb">매월</div><div class="amt" style="color:var(--success)">10.5만</div><div class="lbl">아동수당</div></div>
+        <div class="money-item"><div class="cat" style="background:#fef3c7;color:#d97706">바우처</div><div class="amt" style="color:var(--purple)">100만</div><div class="lbl">국민행복카드</div></div>
+        <div class="money-item"><div class="cat" style="background:#fef3c7;color:#d97706">바우처</div><div class="amt" style="color:var(--purple)">100만</div><div class="lbl">교통비 지원</div></div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-title" style="color:var(--purple);">아빠 육아휴직 시 (6+6)</div>
+      <div class="money-mini">
+        <div class="money-item"><div class="cat" style="background:#ede9fe;color:#7c3aed">6개월</div><div class="amt" style="color:var(--danger)">~2,000만</div><div class="lbl">육아휴직급여</div></div>
+        <div class="money-item"><div class="cat" style="background:#d1fae5;color:#059669">천안시</div><div class="amt" style="color:var(--teal)">180만</div><div class="lbl">아빠 장려금</div></div>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <div class="guide-title" style="color:var(--danger);">첫해 예상 총 수령액</div>
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:2.5rem;font-weight:800;color:var(--danger);">약 4,304만원</div>
+        <div style="font-size:0.82rem;color:var(--gray-500);margin-top:8px;">부모급여+아동수당+일시금+육아휴직 합산</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 연락처 -->
+  <div id="info-contact" style="display:none;">
+    <div class="search-bar">
+      <span class="s-icon">&#128269;</span>
+      <input type="text" id="contactSearch" placeholder="기관명/용도 검색..." oninput="filterContacts()">
+    </div>
+
+    <div class="contact-list">
+      <div class="contact-item" data-csearch="정부24 행복출산 출생신고 수당"><div><div class="name">정부24 행복출산</div><div class="use">출생신고+수당 통합신청</div></div><a href="https://www.gov.kr/portal/onestopSvc/happyBirth" class="call-btn" target="_blank">바로가기</a></div>
+      <div class="contact-item" data-csearch="복지로 부모급여 양육수당"><div><div class="name">복지로</div><div class="use">부모급여, 양육수당, 바우처</div></div><a href="https://www.bokjiro.go.kr" class="call-btn" target="_blank">바로가기</a></div>
+      <div class="contact-item" data-csearch="고용24 육아휴직 급여"><div><div class="name">고용24</div><div class="use">육아휴직급여 신청</div></div><a href="https://www.work24.go.kr" class="call-btn" target="_blank">바로가기</a></div>
+      <div class="contact-item" data-csearch="국민건강보험 피부양자 검진"><div><div class="name">국민건강보험</div><div class="use">피부양자 등록, 건강검진</div></div><a href="https://www.nhis.or.kr" class="call-btn" target="_blank">바로가기</a></div>
+      <div class="contact-item" data-csearch="예방접종 도우미 일정"><div><div class="name">예방접종도우미</div><div class="use">접종 내역, 일정 확인</div></div><a href="https://nip.kdca.go.kr" class="call-btn" target="_blank">바로가기</a></div>
+      <div class="contact-item" data-csearch="한전 전기요금 할인"><div><div class="name">한전ON</div><div class="use">전기요금 할인 신청</div></div><a href="tel:123" class="call-btn">123 전화</a></div>
+      <div class="contact-item" data-csearch="도시가스 할인 감면"><div><div class="name">충남도시가스</div><div class="use">가스요금 감면</div></div><a href="tel:1644-2488" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="동남구 보건소 임산부"><div><div class="name">동남구보건소</div><div class="use">임산부 등록, 검사</div></div><a href="tel:041-521-2651" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="서북구 보건소 임산부"><div><div class="name">서북구보건소</div><div class="use">임산부 등록, 검사</div></div><a href="tel:041-521-2552" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="천안시 여성가족과 출생축하금"><div><div class="name">천안시 여성가족과</div><div class="use">출생축하금, 교통비</div></div><a href="tel:041-521-5374" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="천안시 콜센터 종합"><div><div class="name">천안시 콜센터</div><div class="use">천안시 종합 문의</div></div><a href="tel:1422-36" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="고용복지 센터 육아휴직"><div><div class="name">천안고용복지+센터</div><div class="use">육아휴직, 고용보험</div></div><a href="tel:041-620-7400" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="아이돌봄 서비스 돌봄"><div><div class="name">아이돌봄서비스</div><div class="use">시간제/종일제 돌봄</div></div><a href="tel:1577-2514" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="순천향 소아 응급 24시간"><div><div class="name">순천향대 천안병원</div><div class="use">24시간 소아응급</div></div><a href="tel:041-570-2114" class="call-btn" style="background:var(--danger)">응급전화</a></div>
+      <div class="contact-item" data-csearch="단국대 응급 병원"><div><div class="name">단국대병원</div><div class="use">권역응급의료센터</div></div><a href="tel:041-550-7114" class="call-btn" style="background:var(--danger)">응급전화</a></div>
+      <div class="contact-item" data-csearch="정신건강 위기 상담 자살"><div><div class="name">정신건강위기상담</div><div class="use">24시간 위기상담</div></div><a href="tel:1577-0199" class="call-btn" style="background:var(--danger)">1577-0199</a></div>
+      <div class="contact-item" data-csearch="산후우울증 상담 심리"><div><div class="name">천안시 정신건강복지센터</div><div class="use">산후우울증 무료 상담</div></div><a href="tel:041-578-7199" class="call-btn">전화</a></div>
+      <div class="contact-item" data-csearch="청약홈 특별공급 주택"><div><div class="name">청약홈</div><div class="use">신생아 특별공급</div></div><a href="https://www.applyhome.co.kr" class="call-btn" target="_blank">바로가기</a></div>
+      <div class="contact-item" data-csearch="어린이집 입소 대기"><div><div class="name">아이사랑 포털</div><div class="use">어린이집 검색/입소대기</div></div><a href="https://www.childcare.go.kr" class="call-btn" target="_blank">바로가기</a></div>
+    </div>
+  </div>
+
+  <!-- 함정 TOP 8 -->
+  <div id="info-trap" style="display:none;">
+    <div class="guide-section">
+      <div class="guide-title" style="color:var(--purple);">아빠가 놓치기 쉬운 함정 TOP 8</div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--danger);font-size:0.9rem;">#1 부모급여 60일 지나서 신청</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">소급 불가, 월 110만원씩 날림 -> 출생신고와 동시에 신청!</div>
+        </div>
+      </div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--danger);font-size:0.9rem;">#2 전기/가스 할인 나중에 신청</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">소급 불가, 월 4만원 손해 -> 출산 즉시 한전/가스공사 전화</div>
+        </div>
+      </div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--danger);font-size:0.9rem;">#3 태아보험 22주 이후 가입</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">선천성이상/미숙아 보장 불가 -> 12주 전 가입 권장</div>
+        </div>
+      </div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--warning);font-size:0.9rem;">#4 육아휴직 사전 통보 안 함</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">회사 갈등 -> 출산 30일 전 서면 통보</div>
+        </div>
+      </div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--warning);font-size:0.9rem;">#5 첫만남이용권 2년 내 미사용</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">200만원 자동 소멸 -> 바로 신청, 유효기간 체크</div>
+        </div>
+      </div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--danger);font-size:0.9rem;">#6 건강보험 피부양자 미등록</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">병원비 전액 자비 -> 출생 후 14일 내 등록</div>
+        </div>
+      </div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--warning);font-size:0.9rem;">#7 배우자출산휴가 10일만 사용</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">2025.2 개정: 20일, 3회 분할 가능</div>
+        </div>
+      </div>
+      <div class="m-card" style="margin-bottom:8px;">
+        <div style="padding:12px 16px;">
+          <div style="font-weight:700;color:var(--warning);font-size:0.9rem;">#8 연말정산 출산공제 누락</div>
+          <div style="font-size:0.8rem;color:var(--gray-700);margin-top:4px;">수십~수백만원 환급 못 받음 -> 의료비+인적공제 확인</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 설치 배너 -->
+<div class="install-banner" id="installBanner">
+  <button class="ib-close" onclick="document.getElementById('installBanner').style.display='none'">x</button>
+  <div class="ib-title">홈 화면에 추가하세요</div>
+  <div class="ib-desc">Safari 하단 공유 버튼 -> "홈 화면에 추가"로 앱처럼 사용할 수 있습니다.</div>
+</div>
+
+<!-- 공유 버튼 -->
+<button class="share-fab" onclick="shareApp()" title="공유">&#128279;</button>
+
+<!-- 하단 탭바 -->
+<div class="tab-bar">
+  <button class="tab-item active" onclick="switchTab('check',this)">
+    <span class="icon">&#9745;</span>체크리스트
+  </button>
+  <button class="tab-item" onclick="switchTab('mom',this)">
+    <span class="icon">&#128105;</span>산모가이드
+  </button>
+  <button class="tab-item" onclick="switchTab('baby',this)">
+    <span class="icon">&#128118;</span>아기가이드
+  </button>
+  <button class="tab-item" onclick="switchTab('dad',this)">
+    <span class="icon">&#128104;</span>아빠가이드
+  </button>
+  <button class="tab-item" onclick="switchTab('info',this)">
+    <span class="icon">&#128181;</span>금액/연락처
+  </button>
+</div>
+
+<script>
+// --- 탭 전환 ---
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// --- 체크리스트 ---
+function toggleMCheck(el) {
+  el.classList.toggle('done');
+  const id = el.dataset.id;
+  const state = JSON.parse(localStorage.getItem('pwa-checklist') || '{}');
+  state[id] = el.classList.contains('done');
+  localStorage.setItem('pwa-checklist', JSON.stringify(state));
+  updateMProgress();
+}
+
+function toggleMDetail(header) {
+  const detail = header.nextElementSibling;
+  if (detail && detail.classList.contains('m-detail')) {
+    detail.classList.toggle('open');
+  }
+}
+
+function updateMProgress() {
+  const boxes = document.querySelectorAll('.m-check');
+  const total = boxes.length;
+  const done = document.querySelectorAll('.m-check.done').length;
+  document.getElementById('pText').textContent = done + '/' + total;
+  document.getElementById('pFill').style.width = (total > 0 ? (done/total*100) : 0) + '%';
+}
+
+// --- Phase 필터 ---
+function showPhase(phase) {
+  document.querySelectorAll('#phaseTabs .sub-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.phase-group').forEach(g => {
+    g.style.display = (phase === 'all' || g.dataset.phase === phase) ? 'block' : 'none';
+  });
+}
+
+// --- 검색 ---
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('#tab-check .m-card').forEach(c => {
+    const text = (c.dataset.search + ' ' + c.textContent).toLowerCase();
+    c.style.display = text.includes(q) ? 'block' : 'none';
+  });
+}
+
+// --- 산모 가이드 서브탭 ---
+function showMomSub(sub) {
+  document.querySelectorAll('#tab-mom .sub-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('#tab-mom .guide-section').forEach(s => {
+    s.style.display = (sub === 'mom-all' || s.dataset.momsub === sub) ? 'block' : 'none';
+  });
+}
+
+// --- 아기 가이드 서브탭 ---
+function showBabySub(sub) {
+  document.querySelectorAll('#tab-baby .sub-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('#tab-baby .guide-section').forEach(s => {
+    s.style.display = (sub === 'baby-all' || s.dataset.babysub === sub) ? 'block' : 'none';
+  });
+}
+
+// --- 금액/연락처 서브탭 ---
+function showInfoSub(sub) {
+  document.querySelectorAll('#tab-info .sub-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('info-money').style.display = (sub === 'info-money') ? 'block' : 'none';
+  document.getElementById('info-contact').style.display = (sub === 'info-contact') ? 'block' : 'none';
+  document.getElementById('info-trap').style.display = (sub === 'info-trap') ? 'block' : 'none';
+}
+
+// --- 연락처 검색 ---
+function filterContacts() {
+  const q = document.getElementById('contactSearch').value.toLowerCase();
+  document.querySelectorAll('.contact-item').forEach(c => {
+    const text = (c.dataset.csearch + ' ' + c.textContent).toLowerCase();
+    c.style.display = text.includes(q) ? 'flex' : 'none';
+  });
+}
+
+// --- 인쇄용 체크리스트 토글 ---
+function togglePC(li) {
+  li.classList.toggle('pc-done');
+  savePCState();
+}
+
+function savePCState() {
+  const state = {};
+  document.querySelectorAll('.print-check li').forEach((li, i) => {
+    if (li.classList.contains('pc-done')) state[i] = true;
+  });
+  localStorage.setItem('pwa-pc-state', JSON.stringify(state));
+}
+
+function loadPCState() {
+  const state = JSON.parse(localStorage.getItem('pwa-pc-state') || '{}');
+  document.querySelectorAll('.print-check li').forEach((li, i) => {
+    if (state[i]) li.classList.add('pc-done');
+  });
+}
+
+// --- 공유 ---
+function shareApp() {
+  const url = window.location.href;
+  const text = '출산 완벽 체크리스트 - 임신부터 육아까지 모든 것!';
+  if (navigator.share) {
+    navigator.share({ title: '출산 체크리스트', text: text, url: url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      alert('링크가 복사되었습니다! 카톡이나 메일에 붙여넣기 하세요.');
+    });
+  }
+}
+
+// --- 초기화 ---
+window.addEventListener('DOMContentLoaded', function() {
+  // 체크리스트 복원
+  const state = JSON.parse(localStorage.getItem('pwa-checklist') || '{}');
+  document.querySelectorAll('.m-check').forEach(el => {
+    if (state[el.dataset.id]) el.classList.add('done');
+  });
+  updateMProgress();
+  loadPCState();
+
+  // iOS 설치 배너
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone;
+  if (isIOS && !isStandalone) {
+    setTimeout(() => {
+      document.getElementById('installBanner').style.display = 'block';
+    }, 3000);
+  }
+});
+
+// Service Worker 등록
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+
+</body>
+</html>
