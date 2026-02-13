@@ -35,7 +35,7 @@ body {
 .app-header {
   position: sticky; top: 0; z-index: 100;
   background: linear-gradient(135deg, #1e40af, #3b82f6);
-  color: white; padding: 16px 20px 12px;
+  color: white; padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 .app-header h1 { font-size: 1.2rem; font-weight: 800; }
